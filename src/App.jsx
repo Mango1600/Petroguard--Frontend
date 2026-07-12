@@ -1,43 +1,61 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { supabase } from "./lib/supabase";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const [stations, setStations] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    fetch("https://petroguard-api.onrender.com/stations")
-      .then((res) => res.json())
-      .then((data) => {
-        setStations(data.stations || []);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+  async function handleLogin(e) {
+    e.preventDefault();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setLoggedIn(true);
+  }
+
+  if (loggedIn) {
+    return <Dashboard />;
+  }
 
   return (
     <div>
-      <h1>PetroGuard Dashboard</h1>
-      <h2>Stations</h2>
+      <h1>PetroGuard</h1>
+      <h2>Login</h2>
 
-      <table border="1" cellPadding="10">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Owner ID</th>
-          </tr>
-        </thead>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <tbody>
-          {stations.map((station) => (
-            <tr key={station.id}>
-              <td>{station.id}</td>
-              <td>{station.name}</td>
-              <td>{station.location || "-"}</td>
-              <td>{station.owner_id || "-"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <br />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <br />
+
+        <button type="submit">Login</button>
+      </form>
+
+      <p>{message}</p>
     </div>
   );
 }
