@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
 function TankReadings() {  const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");const [evidenceList, setEvidenceList] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 const [evidenceImage, setEvidenceImage] = useState(null);
   useEffect(() => {
     loadReadings();
