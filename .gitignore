@@ -12,7 +12,15 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# PetroGuard
+.env
+.env.local
+
+lovable-review/
+lovable-review.zip
+
+*.old.jsx
+*backup*.jsx# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { uploadEvidence as saveEvidence } from "../services/evidenceService";import { useEffect, useState } from "react";
 
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
@@ -9,9 +9,22 @@ const [evidenceImage, setEvidenceImage] = useState(null);
   useEffect(() => {
     loadReadings();
   }, []);
-async function uploadEvidence(imageData) {
+async function uploadEvidence(imageData, readingId) {
   console.log("Preparing evidence upload");
+
   setEvidenceImage(imageData);
+
+  const result = await saveEvidence({
+    imageData,
+    fileName: `tank-dip-${Date.now()}.jpg`,
+    stationId: 1,
+    recordId: readingId,
+    moduleName: "tank_readings",
+    evidenceType: "TANK_DIP_PHOTO",
+    description: "Tank dip reading photo",
+  });
+
+  console.log("Evidence result:", result);
 }
   async function loadReadings() {
     setLoading(true);
@@ -235,6 +248,10 @@ async function uploadEvidence(imageData) {
   <CameraCapture
   onCapture={(image) => {
     setEvidenceImage(image);
+
+    if (readings.length > 0) {
+      uploadEvidence(image, readings[0].id);
+    }
   }}
 />
 
