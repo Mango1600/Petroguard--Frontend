@@ -247,11 +247,7 @@ async function uploadEvidence(imageData, readingId) {
 
   <CameraCapture
   onCapture={(image) => {
-    setEvidenceImage(image);
-
-    if (readings.length > 0) {
-      uploadEvidence(image, readings[0].id);
-    }
+    uploadEvidence(image, reading.id);
   }}
 />
 
