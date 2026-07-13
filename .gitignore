@@ -30,3 +30,5 @@ lovable-review.zip
 *.njsproj
 *.sln
 *.sw?
+src/pages/*backup.jsx
+src/pages/*.backup.jsx
