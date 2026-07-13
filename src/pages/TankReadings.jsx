@@ -1,5 +1,5 @@
 import { uploadEvidence as saveEvidence } from "../services/evidenceService";import { useEffect, useState } from "react";
-
+import { getEvidenceByRecord } from "../services/evidenceViewerService";
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
 function TankReadings() {  const [readings, setReadings] = useState([]);
@@ -255,7 +255,18 @@ async function uploadEvidence(imageData, readingId) {
   <p>✅ Evidence photo attached</p>
 )}
 
-  <p>Photo • Video • Verification</p>
+  <p>Photo • Video • Verification</p><button
+  onClick={async () => {
+    const result = await getEvidenceByRecord({
+      moduleName: "tank_readings",
+      recordId: reading.id,
+    });
+
+    console.log("Evidence:", result);
+  }}
+>
+  📂 View Evidence
+</button>
 </div>
     
 
