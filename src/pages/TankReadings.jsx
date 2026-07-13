@@ -2,6 +2,7 @@ import { uploadEvidence as saveEvidence } from "../services/evidenceService";imp
 import { getEvidenceByRecord } from "../services/evidenceViewerService";
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
+import { STATUS, changeStatus, isApproved } from "../engines/verificationEngine";
 function TankReadings() {  const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");const [evidenceList, setEvidenceList] = useState([]);

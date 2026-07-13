@@ -1,4 +1,4 @@
-nano src/engines/verificationEngine.js/**
+/**
  * PetroGuard Engine™
  * Verification Engine v1
  */
