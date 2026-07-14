@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import TankReadings from "./TankReadings";
 import PumpReadings from "./PumpReadings";
-
+import DailyReconciliation from "./DailyReconciliation";
 function Dashboard() {
   const [stations, setStations] = useState([]);
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
-
+const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
   useEffect(() => {
     loadStations();
   }, []);
@@ -41,13 +41,20 @@ function Dashboard() {
           style={{ marginLeft: "10px" }}
         >
           {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
-        </button>
+        </button><button
+  onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}
+  style={{ marginLeft: "10px" }}
+>
+  {showDailyReconciliation
+    ? "Hide Daily Reconciliation"
+    : "Open Daily Reconciliation"}
+</button>
       </div>
 
       {showTankReadings && <TankReadings />}
 
       {showPumpReadings && <PumpReadings />}
-
+{showDailyReconciliation && <DailyReconciliation />}
       <h2>Total Stations</h2>
       <h3>{stations.length}</h3>
 

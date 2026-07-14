@@ -25,8 +25,7 @@ function App() {
   }
 
   if (loggedIn) {
-  return <Dashboard />;
-
+  return <h1>Dashboard Loaded</h1>;
 }
   
 

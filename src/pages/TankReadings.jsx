@@ -1,32 +1,15 @@
-import { uploadEvidence as saveEvidence } from "../services/evidenceService";import { useEffect, useState } from "react";
-import { getEvidenceByRecord } from "../services/evidenceViewerService";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import CameraCapture from "../components/CameraCapture";
-import { STATUS, changeStatus, isApproved } from "../engines/verificationEngine";
-function TankReadings() {  const [readings, setReadings] = useState([]);
+
+function TankReadings() {
+  const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");const [evidenceList, setEvidenceList] = useState([]);
-const [evidenceImage, setEvidenceImage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
   useEffect(() => {
     loadReadings();
   }, []);
-async function uploadEvidence(imageData, readingId) {
-  console.log("Preparing evidence upload");
 
-  setEvidenceImage(imageData);
-
-  const result = await saveEvidence({
-    imageData,
-    fileName: `tank-dip-${Date.now()}.jpg`,
-    stationId: 1,
-    recordId: readingId,
-    moduleName: "tank_readings",
-    evidenceType: "TANK_DIP_PHOTO",
-    description: "Tank dip reading photo",
-  });
-
-  console.log("Evidence result:", result);
-}
   async function loadReadings() {
     setLoading(true);
 
@@ -237,42 +220,17 @@ async function uploadEvidence(imageData, readingId) {
   </p>
 </div>
               <div
-  style={{
-    background: "#F1F5F9",
-    padding: "12px",
-    borderRadius: "8px",
-    marginTop: "12px",
-  }}
->
-  <h4>📷 Evidence Center</h4>
-
-  <CameraCapture
-  onCapture={(image) => {
-    uploadEvidence(image, reading.id);
-  }}
-/>
-
-{evidenceImage && (
-  <p>✅ Evidence photo attached</p>
-)}
-
-  <p>Photo • Video • Verification</p><button
-  onClick={async () => {
-    const result = await getEvidenceByRecord({
-      moduleName: "tank_readings",
-      recordId: reading.id,
-    });
-
-    console.log("Evidence:", result);
-  }}
->
-  📂 View Evidence
-</button>
-</div>
-    
-
-
-
+                style={{
+                  background: "#F1F5F9",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  marginTop: "12px",
+                }}
+              >
+                📷 Evidence Center
+                <br />
+                Photo • Video • Verification
+              </div>
             </div>
           );
         })
