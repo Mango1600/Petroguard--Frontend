@@ -6,7 +6,12 @@ function FuelSales() {
   const [stations, setStations] = useState([]);
   const [pumps, setPumps] = useState([]);
   const [loading, setLoading] = useState(true);
-
+const [stationId, setStationId] = useState("");
+const [pumpId, setPumpId] = useState("");
+const [openingMeter, setOpeningMeter] = useState("");
+const [closingMeter, setClosingMeter] = useState("");
+const [unitPrice, setUnitPrice] = useState("");
+const [paymentMethod, setPaymentMethod] = useState("Cash");
   useEffect(() => {
     loadData();
   }, []);
@@ -57,6 +62,59 @@ function FuelSales() {
     <div>
       <h2>Fuel Sales</h2>
 
+<div>
+  <h3>New Fuel Sale Entry</h3>
+
+  <select value={stationId} onChange={(e) => setStationId(e.target.value)}>
+    <option value="">Select Station</option>
+    {stations.map((station) => (
+      <option key={station.id} value={station.id}>
+        {station.name}
+      </option>
+    ))}
+  </select>
+
+  <select value={pumpId} onChange={(e) => setPumpId(e.target.value)}>
+    <option value="">Select Pump</option>
+    {pumps
+      .filter((pump) => pump.station_id == stationId)
+      .map((pump) => (
+        <option key={pump.id} value={pump.id}>
+          {pump.pump_name}
+        </option>
+      ))}
+  </select>
+
+  <input
+    type="number"
+    placeholder="Opening Meter"
+    value={openingMeter}
+    onChange={(e) => setOpeningMeter(e.target.value)}
+  />
+
+  <input
+    type="number"
+    placeholder="Closing Meter"
+    value={closingMeter}
+    onChange={(e) => setClosingMeter(e.target.value)}
+  />
+
+  <input
+    type="number"
+    placeholder="Unit Price"
+    value={unitPrice}
+    onChange={(e) => setUnitPrice(e.target.value)}
+  />
+
+  <select
+    value={paymentMethod}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+  >
+    <option>Cash</option>
+    <option>POS</option>
+    <option>Credit</option>
+  </select>
+</div>
       <h3>Today's Summary</h3>
 
       <p><strong>Total Sales:</strong> {sales.length}</p>
