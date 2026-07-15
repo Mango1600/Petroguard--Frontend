@@ -10,8 +10,6 @@ function App() {
 
   async function handleLogin(e) {
     e.preventDefault();
-alert(import.meta.env.VITE_SUPABASE_URL);
-alert(import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 20));
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
