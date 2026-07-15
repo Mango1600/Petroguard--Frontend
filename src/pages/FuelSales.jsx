@@ -54,6 +54,34 @@ const [paymentMethod, setPaymentMethod] = useState("Cash");
     const pump = pumps.find((p) => p.id === id);
     return pump ? pump.pump_name : "-";
   }
+async function saveSale() {
+  const quantity = Number(closingMeter) - Number(openingMeter);
+  const totalAmount = quantity * Number(unitPrice);
+
+  const { error } = await supabase
+    .from("fuel_sales")
+    .insert([
+      {
+        station_id: Number(stationId),
+        pump_id: Number(pumpId),
+        quantity,
+        unit_price: Number(unitPrice),
+        total_amount: totalAmount,
+        payment_method: paymentMethod,
+        opening_meter: Number(openingMeter),
+        closing_meter: Number(closingMeter),
+      },
+    ]);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Fuel sale saved successfully");
+
+  loadData();
+}
   if (loading) {
     return <p>Loading Fuel Sales...</p>;
   }
@@ -114,6 +142,9 @@ const [paymentMethod, setPaymentMethod] = useState("Cash");
     <option>POS</option>
     <option>Credit</option>
   </select>
+<button onClick={saveSale}>
+  Save Fuel Sale
+</button>
 </div>
       <h3>Today's Summary</h3>
 
