@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import TankReadings from "./TankReadings";
 import PumpReadings from "./PumpReadings";
+import FuelSales from "./FuelSales";
 import DailyReconciliation from "./DailyReconciliation";
 function Dashboard() {
   const [stations, setStations] = useState([]);
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
+const [showFuelSales, setShowFuelSales] = useState(false);
 const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
   useEffect(() => {
     loadStations();
