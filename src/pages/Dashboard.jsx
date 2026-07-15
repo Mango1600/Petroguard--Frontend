@@ -43,7 +43,14 @@ const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
           style={{ marginLeft: "10px" }}
         >
           {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
-        </button><button
+        </button>
+<button
+  onClick={() => setShowFuelSales(!showFuelSales)}
+  style={{ marginLeft: "10px" }}
+>
+  {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
+</button>
+<button
   onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}
   style={{ marginLeft: "10px" }}
 >
@@ -56,6 +63,7 @@ const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
       {showTankReadings && <TankReadings />}
 
       {showPumpReadings && <PumpReadings />}
+{showFuelSales && <FuelSales />}
 {showDailyReconciliation && <DailyReconciliation />}
       <h2>Total Stations</h2>
       <h3>{stations.length}</h3>
