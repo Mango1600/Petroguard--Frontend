@@ -78,6 +78,9 @@ function PumpReadings() {
             <p>Station: {getStationName(reading.station_id)}</p>
             <p>Opening Meter: {reading.opening_meter}</p>
             <p>Closing Meter: {reading.closing_meter}</p>
+<p>
+  Litres Sold: {Number(reading.closing_meter) - Number(reading.opening_meter)} L
+</p>
             <p>Variance: {reading.variance}</p>
             <hr />
           </div>
