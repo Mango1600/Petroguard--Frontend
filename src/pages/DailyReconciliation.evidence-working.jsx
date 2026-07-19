@@ -1,14 +1,5 @@
-
-
-
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-
-import EvidenceUploader from "../components/EvidenceUploader";
-import EvidenceViewer from "../components/EvidenceViewer";
-import VerificationCard from "../components/VerificationCard";
-import GPSLocation from "../components/GPSLocation";
-import ReconciliationSummary from "../components/ReconciliationSummary";
 
 function DailyReconciliation() {
   const [records, setRecords] = useState([]);
@@ -22,9 +13,9 @@ function DailyReconciliation() {
     setLoading(true);
 
     const { data, error } = await supabase
-  .from("daily_reconciliation")
-  .select("*")
-  .order("reconciliation_date", { ascending: false });
+      .from("daily_reconciliation")
+      .select("*")
+      .order("reconciliation_date", { ascending: false });
 
     if (error) {
       alert(error.message);
@@ -44,54 +35,28 @@ function DailyReconciliation() {
   return (
     <div>
       <h2>Daily Reconciliation</h2>
+<div>
+  <h3>Summary</h3>
+  <p>Total Fuel Sales: {records.reduce((sum, r) => sum + Number(r.fuel_sales || 0), 0)}</p>
+  <p>Total Cash: {records.reduce((sum, r) => sum + Number(r.cash_sales || 0), 0)}</p>
+  <p>Total POS: {records.reduce((sum, r) => sum + Number(r.pos_sales || 0), 0)}</p>
+  <p>Total Credit: {records.reduce((sum, r) => sum + Number(r.credit_sales_amount || 0), 0)}</p>
+  <p>Total Variance: {records.reduce((sum, r) => sum + Number(r.variance || 0), 0)}</p>
+</div>
+<div>
+  <h3>Evidence & Verification</h3>
 
-      <ReconciliationSummary records={records} />
-
-      <h3>Evidence & Verification</h3>
-
-      {records.map((row) => (
-        <div
-          key={row.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "15px",
-            borderRadius: "8px",
-          }}
-        >
-          <h4>Record ID: {row.id}</h4>
-
-         <VerificationCard
-  status={row.status || "Pending"}
-  risk={row.risk_level || "Low"}
-  manager={row.verified_by}
-  owner={row.approved_by}
-  comment={row.comment}
-/>
-<GPSLocation />
-<EvidenceUploader
-  reconciliationId={row.id}
-  stationId={row.station_id}
-  onUploaded={loadReconciliation}
-/>
-<EvidenceViewer reconciliationId={row.id} />
-
-          <p>
-            Opening Meter Photo:{" "}
-            {row.opening_meter_photo ? "Captured" : "Missing"}
-          </p>
-
-          <p>
-            Closing Meter Photo:{" "}
-            {row.closing_meter_photo ? "Captured" : "Missing"}
-          </p>
-
-          <p>
-            Video Evidence:{" "}
-            {row.video_evidence ? "Captured" : "Missing"}
-          </p>
-        </div>
-      ))}
+  {records.map((row) => (
+    <div key={row.id}>
+      <p>Record ID: {row.id}</p>
+      <p>Opening Meter Photo: {row.opening_meter_photo ? "Captured" : "Missing"}</p>
+      <p>Closing Meter Photo: {row.closing_meter_photo ? "Captured" : "Missing"}</p>
+      <p>Video Evidence: {row.video_evidence ? "Captured" : "Missing"}</p>
+      <p>GPS: {row.gps_lat && row.gps_long ? "Captured" : "Missing"}</p>
+      <p>Verification: {row.verified_by ? "Verified" : "Pending"}</p>
+    </div>
+  ))}
+</div>
 
       {records.length === 0 ? (
         <p>No reconciliation records found.</p>
@@ -131,11 +96,3 @@ function DailyReconciliation() {
 }
 
 export default DailyReconciliation;
-
-
-
-
-
-
-
-

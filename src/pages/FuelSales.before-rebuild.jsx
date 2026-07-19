@@ -45,7 +45,6 @@ function FuelSales() {
     setPumps(pumpData || []);
     setLoading(false);
   }
-
   function getStationName(id) {
     const station = stations.find((s) => s.id === id);
     return station ? station.name : "-";
@@ -55,19 +54,9 @@ function FuelSales() {
     const pump = pumps.find((p) => p.id === id);
     return pump ? pump.pump_name : "-";
   }
+
   async function saveSale() {
-    if (!stationId || !pumpId || !openingMeter || !closingMeter || !unitPrice) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
     const quantity = Number(closingMeter) - Number(openingMeter);
-
-    if (quantity <= 0) {
-      alert("Closing meter must be greater than opening meter.");
-      return;
-    }
-
     const totalAmount = quantity * Number(unitPrice);
 
     const { error } = await supabase
@@ -76,21 +65,21 @@ function FuelSales() {
         {
           station_id: Number(stationId),
           pump_id: Number(pumpId),
-          quantity: quantity,
+          quantity,
           unit_price: Number(unitPrice),
           total_amount: totalAmount,
           payment_method: paymentMethod,
-          sale_date: new Date().toISOString(),
+          opening_meter: Number(openingMeter),
+          closing_meter: Number(closingMeter),
         },
       ]);
 
     if (error) {
       alert(error.message);
-      console.error(error);
       return;
     }
 
-    alert("Fuel sale saved successfully.");
+    alert("Fuel sale saved successfully!");
 
     setStationId("");
     setPumpId("");
@@ -100,9 +89,7 @@ function FuelSales() {
     setPaymentMethod("Cash");
 
     loadData();
-  }
-
-  return (
+  }  return (
     <div>
       <h2>Fuel Sales</h2>
 
@@ -110,10 +97,9 @@ function FuelSales() {
         <p>Loading...</p>
       ) : (
         <>
-          <h3>New Fuel Sale Entry</h3>          <select
-            value={stationId}
-            onChange={(e) => setStationId(e.target.value)}
-          >
+          <h3>New Fuel Sale Entry</h3>
+
+          <select value={stationId} onChange={(e) => setStationId(e.target.value)}>
             <option value="">Select Station</option>
             {stations.map((station) => (
               <option key={station.id} value={station.id}>
@@ -122,18 +108,13 @@ function FuelSales() {
             ))}
           </select>
 
-          <select
-            value={pumpId}
-            onChange={(e) => setPumpId(e.target.value)}
-          >
+          <select value={pumpId} onChange={(e) => setPumpId(e.target.value)}>
             <option value="">Select Pump</option>
-            {pumps
-              .filter((pump) => String(pump.station_id) === String(stationId))
-              .map((pump) => (
-                <option key={pump.id} value={pump.id}>
-                  {pump.pump_name}
-                </option>
-              ))}
+            {pumps.map((pump) => (
+              <option key={pump.id} value={pump.id}>
+                {pump.pump_name}
+              </option>
+            ))}
           </select>
 
           <input
@@ -166,13 +147,15 @@ function FuelSales() {
             <option>Transfer</option>
             <option>Credit</option>
           </select>
+<p>Station ID: {stationId}</p>
+<p>Pump ID: {pumpId}</p>
 
           <button onClick={saveSale}>Save Fuel Sale</button>
 
           <h3>Today's Summary</h3>
           <p>Total Sales: {sales.length}</p>
 
-          <table border="1" cellPadding="5">
+          <table>
             <thead>
               <tr>
                 <th>ID</th>
@@ -184,7 +167,6 @@ function FuelSales() {
                 <th>Total Amount</th>
               </tr>
             </thead>
-
             <tbody>
               {sales.map((sale) => (
                 <tr key={sale.id}>
@@ -206,17 +188,4 @@ function FuelSales() {
 }
 
 export default FuelSales;
-
-
-
-
-
-
-
-
-
-
-
-
-
  

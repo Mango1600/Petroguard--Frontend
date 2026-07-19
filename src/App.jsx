@@ -1,12 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        setLoggedIn(true);
+      } else {
+        setLoggedIn(false);
+      }
+    }
+
+    checkSession();
+  }, []);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -24,11 +38,13 @@ function App() {
     setLoggedIn(true);
   }
 
-  if (loggedIn) {
-  return <Dashboard />;
+  if (loggedIn === null) {
+    return <p>Loading...</p>;
+  }
 
-}
-  
+  if (loggedIn) {
+    return <Dashboard />;
+  }
 
   return (
     <div>

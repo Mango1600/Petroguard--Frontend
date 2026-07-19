@@ -1,14 +1,5 @@
-
-
-
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-
-import EvidenceUploader from "../components/EvidenceUploader";
-import EvidenceViewer from "../components/EvidenceViewer";
-import VerificationCard from "../components/VerificationCard";
-import GPSLocation from "../components/GPSLocation";
-import ReconciliationSummary from "../components/ReconciliationSummary";
 
 function DailyReconciliation() {
   const [records, setRecords] = useState([]);
@@ -22,9 +13,9 @@ function DailyReconciliation() {
     setLoading(true);
 
     const { data, error } = await supabase
-  .from("daily_reconciliation")
-  .select("*")
-  .order("reconciliation_date", { ascending: false });
+      .from("daily_reconciliation")
+      .select("*")
+      .order("reconciliation_date", { ascending: false });
 
     if (error) {
       alert(error.message);
@@ -44,54 +35,6 @@ function DailyReconciliation() {
   return (
     <div>
       <h2>Daily Reconciliation</h2>
-
-      <ReconciliationSummary records={records} />
-
-      <h3>Evidence & Verification</h3>
-
-      {records.map((row) => (
-        <div
-          key={row.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "15px",
-            borderRadius: "8px",
-          }}
-        >
-          <h4>Record ID: {row.id}</h4>
-
-         <VerificationCard
-  status={row.status || "Pending"}
-  risk={row.risk_level || "Low"}
-  manager={row.verified_by}
-  owner={row.approved_by}
-  comment={row.comment}
-/>
-<GPSLocation />
-<EvidenceUploader
-  reconciliationId={row.id}
-  stationId={row.station_id}
-  onUploaded={loadReconciliation}
-/>
-<EvidenceViewer reconciliationId={row.id} />
-
-          <p>
-            Opening Meter Photo:{" "}
-            {row.opening_meter_photo ? "Captured" : "Missing"}
-          </p>
-
-          <p>
-            Closing Meter Photo:{" "}
-            {row.closing_meter_photo ? "Captured" : "Missing"}
-          </p>
-
-          <p>
-            Video Evidence:{" "}
-            {row.video_evidence ? "Captured" : "Missing"}
-          </p>
-        </div>
-      ))}
 
       {records.length === 0 ? (
         <p>No reconciliation records found.</p>
@@ -131,11 +74,3 @@ function DailyReconciliation() {
 }
 
 export default DailyReconciliation;
-
-
-
-
-
-
-
-

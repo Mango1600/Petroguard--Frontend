@@ -1,10 +1,6 @@
-
-
-
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-import EvidenceUploader from "../components/EvidenceUploader";
 import EvidenceViewer from "../components/EvidenceViewer";
 import VerificationCard from "../components/VerificationCard";
 import GPSLocation from "../components/GPSLocation";
@@ -22,9 +18,12 @@ function DailyReconciliation() {
     setLoading(true);
 
     const { data, error } = await supabase
-  .from("daily_reconciliation")
-  .select("*")
-  .order("reconciliation_date", { ascending: false });
+      .from("daily_reconciliation")
+      .select(`
+        *,
+        evidence(*)
+      `)
+      .order("reconciliation_date", { ascending: false });
 
     if (error) {
       alert(error.message);
@@ -56,25 +55,24 @@ function DailyReconciliation() {
             border: "1px solid #ccc",
             padding: "10px",
             marginBottom: "15px",
-            borderRadius: "8px",
+            borderRadius: "8px"
           }}
         >
           <h4>Record ID: {row.id}</h4>
 
-         <VerificationCard
-  status={row.status || "Pending"}
-  risk={row.risk_level || "Low"}
-  manager={row.verified_by}
-  owner={row.approved_by}
-  comment={row.comment}
-/>
-<GPSLocation />
-<EvidenceUploader
-  reconciliationId={row.id}
-  stationId={row.station_id}
-  onUploaded={loadReconciliation}
-/>
-<EvidenceViewer reconciliationId={row.id} />
+          <EvidenceViewer reconciliationId={row.id} />
+
+          <GPSLocation />
+
+          <VerificationCard
+            status={row.status || "Pending"}
+            risk={row.risk_level || "Low"}
+            manager={row.verified_by}
+            owner={row.approved_by}
+            comment={row.comment}
+          />
+
+          <hr />
 
           <p>
             Opening Meter Photo:{" "}
@@ -131,6 +129,18 @@ function DailyReconciliation() {
 }
 
 export default DailyReconciliation;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

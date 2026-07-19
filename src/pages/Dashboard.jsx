@@ -4,12 +4,14 @@ import TankReadings from "./TankReadings";
 import PumpReadings from "./PumpReadings";
 import FuelSales from "./FuelSales";
 import DailyReconciliation from "./DailyReconciliation";
+import ManagerDashboard from "./ManagerDashboard";
 function Dashboard() {
   const [stations, setStations] = useState([]);
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
 const [showFuelSales, setShowFuelSales] = useState(false);
 const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
+const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   useEffect(() => {
     loadStations();
   }, []);
@@ -58,6 +60,15 @@ const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
     ? "Hide Daily Reconciliation"
     : "Open Daily Reconciliation"}
 </button>
+
+<button
+  onClick={() => setShowManagerDashboard(!showManagerDashboard)}
+  style={{ marginLeft: "10px" }}
+>
+  {showManagerDashboard
+    ? "Hide Manager Dashboard"
+    : "Open Manager Dashboard"}
+</button>
       </div>
 
       {showTankReadings && <TankReadings />}
@@ -65,6 +76,8 @@ const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
       {showPumpReadings && <PumpReadings />}
 {showFuelSales && <FuelSales />}
 {showDailyReconciliation && <DailyReconciliation />}
+
+{showManagerDashboard && <ManagerDashboard />}
       <h2>Total Stations</h2>
       <h3>{stations.length}</h3>
 
