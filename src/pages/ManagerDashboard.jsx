@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import ManagerActivity from "../components/ManagerActivity";
 
 export default function ManagerDashboard() {
   const [attendants, setAttendants] = useState([]);
@@ -17,13 +18,8 @@ export default function ManagerDashboard() {
         role,
         station_id,
         staff_pumps (
-  pump_id,
-  pumps!staff_pumps_pump_id_fkey (
-    pump_name,
-    product_type
-  )
-)
-
+          pump_id
+        )
       `)
       .eq("role", "Attendant");
 
@@ -39,17 +35,18 @@ export default function ManagerDashboard() {
     <div>
       <h1>Manager Dashboard</h1>
 
+      <ManagerActivity />
+
       <h2>Attendant Pump Assignment</h2>
 
       {attendants.length === 0 ? (
-        <p>No attendants found</p>
+        <p>No attendants found.</p>
       ) : (
         <table border="1" cellPadding="8">
           <thead>
             <tr>
               <th>Attendant</th>
-              <th>Pump</th>
-              <th>Product</th>
+              <th>Pump ID</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -60,11 +57,7 @@ export default function ManagerDashboard() {
                 <td>{person.name}</td>
 
                 <td>
-                  {person.staff_pumps?.[0]?.pumps?.pump_name || person.staff_pumps?.[0]?.pump_name || "-"}
-                </td>
-
-                <td>
-                  {person.staff_pumps?.[0]?.pumps?.product_type || person.staff_pumps?.[0]?.product_type || "-"}
+                  {person.staff_pumps?.[0]?.pump_id || "-"}
                 </td>
 
                 <td>Active</td>
