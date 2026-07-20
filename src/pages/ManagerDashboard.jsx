@@ -16,14 +16,21 @@ export default function ManagerDashboard() {
         id,
         name,
         role,
-        station_id,
+        email,
+        status,
         staff_pumps (
-          pump_id
+          pump_id,
+          pumps (
+            pump_name,
+            product_type
+          )
         )
       `)
-      .eq("role", "Attendant");
+      .eq("role", "Attendant")
+      .order("id");
 
     if (error) {
+      console.error("Manager Dashboard Error:", error);
       alert(error.message);
       return;
     }
@@ -37,6 +44,8 @@ export default function ManagerDashboard() {
 
       <ManagerActivity />
 
+      <hr />
+
       <h2>Attendant Pump Assignment</h2>
 
       {attendants.length === 0 ? (
@@ -46,7 +55,8 @@ export default function ManagerDashboard() {
           <thead>
             <tr>
               <th>Attendant</th>
-              <th>Pump ID</th>
+              <th>Role</th>
+              <th>Assigned Pump</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -56,11 +66,24 @@ export default function ManagerDashboard() {
               <tr key={person.id}>
                 <td>{person.name}</td>
 
+                <td>{person.role}</td>
+
                 <td>
-                  {person.staff_pumps?.[0]?.pump_id || "-"}
+                  {person.staff_pumps?.length > 0 ? (
+                    person.staff_pumps.map((item) => (
+                      <div key={item.pump_id}>
+                        {item.pumps?.pump_name || "Pump"}{" "}
+                        ({item.pumps?.product_type || "-"})
+                      </div>
+                    ))
+                  ) : (
+                    "-"
+                  )}
                 </td>
 
-                <td>Active</td>
+                <td>
+                  {person.status || "Active"}
+                </td>
               </tr>
             ))}
           </tbody>
