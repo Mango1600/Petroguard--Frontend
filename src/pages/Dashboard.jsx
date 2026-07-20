@@ -12,6 +12,7 @@ import PumpManagement from "./PumpManagement";
 import TankManagement from "./TankManagement";
 import FuelPriceManagement from "./FuelPriceManagement";
 import FuelDeliveryManagement from "./FuelDeliveryManagement";
+import InventoryManagement from "./InventoryManagement";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
 
@@ -26,6 +27,7 @@ export default function Dashboard({ staff }) {
 const [showTankManagement, setShowTankManagement] = useState(false);
 const [showFuelPriceManagement, setShowFuelPriceManagement] = useState(false);
 const [showFuelDeliveryManagement, setShowFuelDeliveryManagement] = useState(false);
+const [showInventoryManagement, setShowInventoryManagement] = useState(false);
   useEffect(() => {
     loadStation();
   }, []);
@@ -119,6 +121,11 @@ const [showFuelDeliveryManagement, setShowFuelDeliveryManagement] = useState(fal
     ? "Hide Fuel Delivery Management"
     : "Open Fuel Delivery Management"}
 </button>
+<button onClick={() => setShowInventoryManagement(!showInventoryManagement)}>
+  {showInventoryManagement
+    ? "Hide Inventory Management"
+    : "Open Inventory Management"}
+</button>
 
       <hr />
 
@@ -128,6 +135,7 @@ const [showFuelDeliveryManagement, setShowFuelDeliveryManagement] = useState(fal
 {showTankManagement && <TankManagement />}
 {showFuelPriceManagement && <FuelPriceManagement />}
 {showFuelDeliveryManagement && <FuelDeliveryManagement />}
+{showInventoryManagement && <InventoryManagement />}
 
       {showFuelSales && <FuelSales />}
 
