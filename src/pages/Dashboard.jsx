@@ -7,6 +7,7 @@ import FuelSales from "./FuelSales";
 import DailyReconciliation from "./DailyReconciliation";
 import ManagerDashboard from "./ManagerDashboard";
 import StaffManagement from "./StaffManagement";
+import StationManagement from "./StationManagement";
 
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
@@ -17,6 +18,7 @@ export default function Dashboard({ staff }) {
   const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showStaffManagement, setShowStaffManagement] = useState(false);
+  const [showStationManagement, setShowStationManagement] = useState(false);
 
   useEffect(() => {
     loadStation();
@@ -50,19 +52,7 @@ export default function Dashboard({ staff }) {
       </p>
 
       <p>
-        Email: <b>{staff?.email}</b>
-      </p>
-
-      <hr />
-
-      <h3>Station</h3>
-
-      <p>
-        {station?.name || "Loading..."}
-      </p>
-
-      <p>
-        {station?.location || "-"}
+        Station: <b>{station?.name || "-"}</b>
       </p>
 
       <hr />
@@ -109,6 +99,16 @@ export default function Dashboard({ staff }) {
           : "Open Staff Management"}
       </button>
 
+      <button
+        onClick={() =>
+          setShowStationManagement(!showStationManagement)
+        }
+      >
+        {showStationManagement
+          ? "Hide Station Management"
+          : "Open Station Management"}
+      </button>
+
       <hr />
 
       {showTankReadings && <TankReadings />}
@@ -123,8 +123,7 @@ export default function Dashboard({ staff }) {
 
       {showStaffManagement && <StaffManagement />}
 
+      {showStationManagement && <StationManagement />}
     </div>
   );
 }
-
-
