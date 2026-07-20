@@ -1,109 +1,136 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+
 import TankReadings from "./TankReadings";
 import PumpReadings from "./PumpReadings";
 import FuelSales from "./FuelSales";
 import DailyReconciliation from "./DailyReconciliation";
 import ManagerDashboard from "./ManagerDashboard";
-function Dashboard() {
-  const [stations, setStations] = useState([]);
+
+export default function Dashboard({ staff }) {
+  const [station, setStation] = useState(null);
+
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
-const [showFuelSales, setShowFuelSales] = useState(false);
-const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
-const [showManagerDashboard, setShowManagerDashboard] = useState(false);
+  const [showFuelSales, setShowFuelSales] = useState(false);
+  const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
+  const [showManagerDashboard, setShowManagerDashboard] = useState(false);
+
   useEffect(() => {
-    loadStations();
+    loadStation();
   }, []);
 
-  async function loadStations() {
+  async function loadStation() {
+    if (!staff?.station_id) return;
+
     const { data, error } = await supabase
       .from("stations")
       .select("*")
-      .order("id");
+      .eq("id", staff.station_id)
+      .single();
 
     if (error) {
-      alert(error.message);
-      console.error(error);
+      console.error("Station Error:", error);
       return;
     }
 
-    setStations(data || []);
+    setStation(data);
   }
 
   return (
     <div>
-      <h1>PetroGuard Dashboard</h1>
+      <h1>PetroGuard Command Centre</h1>
 
-      <div style={{ marginBottom: "20px" }}>
+      <hr />
+
+      <h2>Welcome, {staff?.name}</h2>
+
+      <p>
+        Role: <b>{staff?.role}</b>
+      </p>
+
+      <p>
+        Email: <b>{staff?.email}</b>
+      </p>
+
+      <h3>Station Information</h3>
+
+      {station ? (
+        <div>
+          <p>
+            Station: <b>{station.name}</b>
+          </p>
+
+          <p>
+            Location: <b>{station.location || "-"}</b>
+          </p>
+        </div>
+      ) : (
+        <p>Loading station...</p>
+      )}
+
+      <hr />
+
+      <div>
         <button onClick={() => setShowTankReadings(!showTankReadings)}>
           {showTankReadings ? "Hide Tank Readings" : "Open Tank Readings"}
         </button>
 
-        <button
-          onClick={() => setShowPumpReadings(!showPumpReadings)}
-          style={{ marginLeft: "10px" }}
-        >
+        <button onClick={() => setShowPumpReadings(!showPumpReadings)}>
           {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
         </button>
-<button
-  onClick={() => setShowFuelSales(!showFuelSales)}
-  style={{ marginLeft: "10px" }}
->
-  {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
-</button>
-<button
-  onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}
-  style={{ marginLeft: "10px" }}
->
-  {showDailyReconciliation
-    ? "Hide Daily Reconciliation"
-    : "Open Daily Reconciliation"}
-</button>
 
-<button
-  onClick={() => setShowManagerDashboard(!showManagerDashboard)}
-  style={{ marginLeft: "10px" }}
->
-  {showManagerDashboard
-    ? "Hide Manager Dashboard"
-    : "Open Manager Dashboard"}
-</button>
+        <button onClick={() => setShowFuelSales(!showFuelSales)}>
+          {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
+        </button>
+
+        <button
+          onClick={() =>
+            setShowDailyReconciliation(!showDailyReconciliation)
+          }
+        >
+          {showDailyReconciliation
+            ? "Hide Daily Reconciliation"
+            : "Open Daily Reconciliation"}
+        </button>
+
+        <button
+          onClick={() =>
+            setShowManagerDashboard(!showManagerDashboard)
+          }
+        >
+          {showManagerDashboard
+            ? "Hide Manager Dashboard"
+            : "Open Manager Dashboard"}
+        </button>
       </div>
+
+      <hr />
 
       {showTankReadings && <TankReadings />}
 
       {showPumpReadings && <PumpReadings />}
-{showFuelSales && <FuelSales />}
-{showDailyReconciliation && <DailyReconciliation />}
 
-{showManagerDashboard && <ManagerDashboard />}
-      <h2>Total Stations</h2>
-      <h3>{stations.length}</h3>
+      {showFuelSales && <FuelSales />}
 
-      <h2>Stations</h2>
+      {showDailyReconciliation && <DailyReconciliation />}
 
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Location</th>
-          </tr>
-        </thead>
+      {showManagerDashboard && <ManagerDashboard />}
 
-        <tbody>
-          {stations.map((station) => (
-            <tr key={station.id}>
-              <td>{station.id}</td>
-              <td>{station.name}</td>
-              <td>{station.location || "-"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <hr />
+
+      <h2>System Status</h2>
+
+      <p>Logged in user: {staff?.name}</p>
+
+      <p>Status: Active</p>
     </div>
   );
 }
 
-export default Dashboard;
+
+
+
+
+
+
