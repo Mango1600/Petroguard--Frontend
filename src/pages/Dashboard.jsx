@@ -8,6 +8,7 @@ import DailyReconciliation from "./DailyReconciliation";
 import ManagerDashboard from "./ManagerDashboard";
 import StaffManagement from "./StaffManagement";
 import StationManagement from "./StationManagement";
+import PumpManagement from "./PumpManagement";
 
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
@@ -19,6 +20,7 @@ export default function Dashboard({ staff }) {
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showStaffManagement, setShowStaffManagement] = useState(false);
   const [showStationManagement, setShowStationManagement] = useState(false);
+  const [showPumpManagement, setShowPumpManagement] = useState(false);
 
   useEffect(() => {
     loadStation();
@@ -69,44 +71,34 @@ export default function Dashboard({ staff }) {
         {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
       </button>
 
-      <button
-        onClick={() =>
-          setShowDailyReconciliation(!showDailyReconciliation)
-        }
-      >
+      <button onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}>
         {showDailyReconciliation
           ? "Hide Daily Reconciliation"
           : "Open Daily Reconciliation"}
       </button>
 
-      <button
-        onClick={() =>
-          setShowManagerDashboard(!showManagerDashboard)
-        }
-      >
+      <button onClick={() => setShowManagerDashboard(!showManagerDashboard)}>
         {showManagerDashboard
           ? "Hide Manager Dashboard"
           : "Open Manager Dashboard"}
       </button>
 
-      <button
-        onClick={() =>
-          setShowStaffManagement(!showStaffManagement)
-        }
-      >
+      <button onClick={() => setShowStaffManagement(!showStaffManagement)}>
         {showStaffManagement
           ? "Hide Staff Management"
           : "Open Staff Management"}
       </button>
 
-      <button
-        onClick={() =>
-          setShowStationManagement(!showStationManagement)
-        }
-      >
+      <button onClick={() => setShowStationManagement(!showStationManagement)}>
         {showStationManagement
           ? "Hide Station Management"
           : "Open Station Management"}
+      </button>
+
+      <button onClick={() => setShowPumpManagement(!showPumpManagement)}>
+        {showPumpManagement
+          ? "Hide Pump Management"
+          : "Open Pump Management"}
       </button>
 
       <hr />
@@ -124,6 +116,9 @@ export default function Dashboard({ staff }) {
       {showStaffManagement && <StaffManagement />}
 
       {showStationManagement && <StationManagement />}
+
+      {showPumpManagement && <PumpManagement />}
+
     </div>
   );
 }
