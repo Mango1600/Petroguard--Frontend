@@ -6,6 +6,7 @@ import PumpReadings from "./PumpReadings";
 import FuelSales from "./FuelSales";
 import DailyReconciliation from "./DailyReconciliation";
 import ManagerDashboard from "./ManagerDashboard";
+import StaffManagement from "./StaffManagement";
 
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
@@ -15,6 +16,7 @@ export default function Dashboard({ staff }) {
   const [showFuelSales, setShowFuelSales] = useState(false);
   const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
+  const [showStaffManagement, setShowStaffManagement] = useState(false);
 
   useEffect(() => {
     loadStation();
@@ -30,7 +32,7 @@ export default function Dashboard({ staff }) {
       .single();
 
     if (error) {
-      console.error("Station Error:", error);
+      console.error(error);
       return;
     }
 
@@ -40,8 +42,6 @@ export default function Dashboard({ staff }) {
   return (
     <div>
       <h1>PetroGuard Command Centre</h1>
-
-      <hr />
 
       <h2>Welcome, {staff?.name}</h2>
 
@@ -53,57 +53,61 @@ export default function Dashboard({ staff }) {
         Email: <b>{staff?.email}</b>
       </p>
 
-      <h3>Station Information</h3>
+      <hr />
 
-      {station ? (
-        <div>
-          <p>
-            Station: <b>{station.name}</b>
-          </p>
+      <h3>Station</h3>
 
-          <p>
-            Location: <b>{station.location || "-"}</b>
-          </p>
-        </div>
-      ) : (
-        <p>Loading station...</p>
-      )}
+      <p>
+        {station?.name || "Loading..."}
+      </p>
+
+      <p>
+        {station?.location || "-"}
+      </p>
 
       <hr />
 
-      <div>
-        <button onClick={() => setShowTankReadings(!showTankReadings)}>
-          {showTankReadings ? "Hide Tank Readings" : "Open Tank Readings"}
-        </button>
+      <button onClick={() => setShowTankReadings(!showTankReadings)}>
+        {showTankReadings ? "Hide Tank Readings" : "Open Tank Readings"}
+      </button>
 
-        <button onClick={() => setShowPumpReadings(!showPumpReadings)}>
-          {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
-        </button>
+      <button onClick={() => setShowPumpReadings(!showPumpReadings)}>
+        {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
+      </button>
 
-        <button onClick={() => setShowFuelSales(!showFuelSales)}>
-          {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
-        </button>
+      <button onClick={() => setShowFuelSales(!showFuelSales)}>
+        {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
+      </button>
 
-        <button
-          onClick={() =>
-            setShowDailyReconciliation(!showDailyReconciliation)
-          }
-        >
-          {showDailyReconciliation
-            ? "Hide Daily Reconciliation"
-            : "Open Daily Reconciliation"}
-        </button>
+      <button
+        onClick={() =>
+          setShowDailyReconciliation(!showDailyReconciliation)
+        }
+      >
+        {showDailyReconciliation
+          ? "Hide Daily Reconciliation"
+          : "Open Daily Reconciliation"}
+      </button>
 
-        <button
-          onClick={() =>
-            setShowManagerDashboard(!showManagerDashboard)
-          }
-        >
-          {showManagerDashboard
-            ? "Hide Manager Dashboard"
-            : "Open Manager Dashboard"}
-        </button>
-      </div>
+      <button
+        onClick={() =>
+          setShowManagerDashboard(!showManagerDashboard)
+        }
+      >
+        {showManagerDashboard
+          ? "Hide Manager Dashboard"
+          : "Open Manager Dashboard"}
+      </button>
+
+      <button
+        onClick={() =>
+          setShowStaffManagement(!showStaffManagement)
+        }
+      >
+        {showStaffManagement
+          ? "Hide Staff Management"
+          : "Open Staff Management"}
+      </button>
 
       <hr />
 
@@ -117,20 +121,10 @@ export default function Dashboard({ staff }) {
 
       {showManagerDashboard && <ManagerDashboard />}
 
-      <hr />
+      {showStaffManagement && <StaffManagement />}
 
-      <h2>System Status</h2>
-
-      <p>Logged in user: {staff?.name}</p>
-
-      <p>Status: Active</p>
     </div>
   );
 }
-
-
-
-
-
 
 
