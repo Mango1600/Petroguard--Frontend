@@ -57,8 +57,15 @@ export default function PumpManagement() {
     e.preventDefault();
 
     const { error } = await supabase
-      .from("pumps")
-      .insert([form]);
+  .from("pumps")
+  .insert([
+    {
+      station_id: Number(form.station_id),
+      pump_name: form.pump_name,
+      product_type: form.product_type,
+      status: form.status,
+    },
+  ]);
 
     if (error) {
       alert(error.message);
@@ -81,7 +88,7 @@ export default function PumpManagement() {
           onChange={(e)=>
             setForm({
               ...form,
-              station_id:e.target.value
+              station_id: Number(e.target.value)
             })
           }
         >
