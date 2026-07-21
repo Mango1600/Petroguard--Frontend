@@ -14,6 +14,7 @@ import FuelPriceManagement from "./FuelPriceManagement";
 import FuelDeliveryManagement from "./FuelDeliveryManagement";
 import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
+import TankDipEntry from "./TankDipEntry";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
 
@@ -30,6 +31,7 @@ const [showFuelPriceManagement, setShowFuelPriceManagement] = useState(false);
 const [showFuelDeliveryManagement, setShowFuelDeliveryManagement] = useState(false);
 const [showInventoryManagement, setShowInventoryManagement] = useState(false);
 const [showAlertsManagement, setShowAlertsManagement] = useState(false);
+const [showTankDipEntry, setShowTankDipEntry] = useState(false);
   useEffect(() => {
     loadStation();
   }, []);
@@ -70,6 +72,11 @@ const [showAlertsManagement, setShowAlertsManagement] = useState(false);
       <button onClick={() => setShowTankReadings(!showTankReadings)}>
         {showTankReadings ? "Hide Tank Readings" : "Open Tank Readings"}
       </button>
+<button onClick={() => setShowTankDipEntry(!showTankDipEntry)}>
+  {showTankDipEntry
+    ? "Hide Tank Dip Entry"
+    : "Open Tank Dip Entry"}
+</button>
 
       <button onClick={() => setShowPumpReadings(!showPumpReadings)}>
         {showPumpReadings ? "Hide Pump Readings" : "Open Pump Readings"}
@@ -137,6 +144,7 @@ const [showAlertsManagement, setShowAlertsManagement] = useState(false);
       <hr />
 
       {showTankReadings && <TankReadings />}
+{showTankDipEntry && <TankDipEntry staff={staff} />}
 
       {showPumpReadings && <PumpReadings />}
 {showTankManagement && <TankManagement />}
