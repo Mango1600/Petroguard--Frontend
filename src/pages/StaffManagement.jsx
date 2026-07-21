@@ -18,29 +18,29 @@ export default function StaffManagement() {
   }, []);
 
   async function loadStaff() {
-    const { data, error } = await supabase
-      .from("staff")
-      .select(`
-        id,
-        name,
-        role,
-        phone,
-        email,
-        status,
-        stations (
-          name
-        )
-      `)
-      .order("id");
+  const { data, error } = await supabase
+    .from("staff")
+    .select(`
+      id,
+      name,
+      role,
+      phone,
+      email,
+      status,
+      stations!staff_station_id_fkey (
+        name
+      )
+    `)
+    .order("id");
 
-    if (error) {
-      console.error(error);
-      alert(error.message);
-      return;
-    }
-
-    setStaffList(data || []);
+  if (error) {
+    console.error(error);
+    alert(error.message);
+    return;
   }
+
+  setStaffList(data || []);
+}
 
   async function addStaff(e) {
     e.preventDefault();
