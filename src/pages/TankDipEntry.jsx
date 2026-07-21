@@ -89,6 +89,26 @@ console.log("ERROR:", error);
 
   async function saveReading(e) {
     e.preventDefault();
+if (!form.tank_id) {
+  alert("Please select a tank.");
+  return;
+}
+
+if (Number(form.closing_volume) <= 0) {
+  alert("Closing volume must be greater than zero.");
+  return;
+}
+
+if (
+  Number(form.opening_volume) === 0 &&
+  Number(form.deliveries) === 0 &&
+  Number(form.closing_volume) > 0
+) {
+  alert(
+    "Opening volume cannot be zero for a normal tank dip. Use Initial Stock Entry for a new tank."
+  );
+  return;
+}
 
     const { error } = await supabase
       .from("tank_readings")
