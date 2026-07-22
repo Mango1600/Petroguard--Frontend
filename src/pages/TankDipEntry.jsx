@@ -110,7 +110,7 @@ if (
   return;
 }
 
-    const { error } = await supabase
+    const { data: reading, error } = await supabase
       .from("tank_readings")
       .insert([
         {
@@ -127,12 +127,25 @@ if (
           reading_date: form.reading_date,
           status: "DRAFT",
         },
-      ]);
+            ])
+      .select()
+      .single();
 
     if (error) {
       alert(error.message);
       return;
     }
+if (evidenceImage) {
+  await uploadEvidence({
+    imageData: evidenceImage,
+    fileName: "tank-dip-photo.jpg",
+    stationId: staff.station_id,
+    recordId: reading.id,
+    moduleName: "tank_readings",
+    evidenceType: "TANK_DIP_PHOTO",
+    uploadedBy: staff.id,
+  });
+}
 await supabase
   .from("tanks")
   .update({
