@@ -45,6 +45,13 @@ function TankReadings() {
   }
 
   function getVariance(variance) {
+    if (variance === null || variance === undefined) {
+      return {
+        label: "🟡 Incomplete Draft",
+        note: "Waiting for opening volume and expected volume",
+      };
+    }
+
     if (variance < 0) {
       return {
         label: `🔴 Loss ${litres(Math.abs(variance))} L`,

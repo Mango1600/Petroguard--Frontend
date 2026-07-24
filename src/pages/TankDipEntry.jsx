@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
 import { uploadEvidence } from "../services/evidenceService";
 export default function TankDipEntry({ staff }) {
+  console.log("TankDipEntry staff:", staff);
   const [tanks, setTanks] = useState([]);
   const [loading, setLoading] = useState(false);
 const [evidenceImage, setEvidenceImage] = useState(null);
@@ -21,10 +22,15 @@ const [evidenceImage, setEvidenceImage] = useState(null);
   });
 
   useEffect(() => {
-    loadTanks();
-  }, []);
+  loadTanks();
+}, [staff]);
 
   async function loadTanks() {
+    if (!staff?.station_id) {
+      console.log("No staff station yet");
+      return;
+    }
+
     setLoading(true);
 
     const { data, error } = await supabase
@@ -179,7 +185,7 @@ await supabase
         <form onSubmit={saveReading}>
 
           <label>Tank</label>
-          <br />
+          <br /> *
           <select
 
             value={form.tank_id}
@@ -203,83 +209,13 @@ await supabase
   ))}
 </ul>
 
-          <br /><br />
-
-          <label>Reading Period</label>
           <br />
-          <select
-            value={form.reading_period}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                reading_period: e.target.value,
-              })
-            }
-          >
-            <option value="Morning">Morning</option>
-            <option value="Evening">Evening</option>
-          </select>
 
-          <br /><br />
-
-          <label>Opening Volume (L)</label>
-          <br />
-          <input
-            type="number"
-            value={form.opening_volume}
-            readOnly
+          <CameraCapture
+            onCapture={(image) => setEvidenceImage(image)}
           />
 
-          <br /><br />
-
-          <label>Deliveries (L)</label>
           <br />
-          <input
-            type="number"
-            value={form.deliveries}
-            onChange={(e) =>
-              calculateValues(form.closing_volume, e.target.value)
-            }
-          />
-
-          <br /><br />
-
-          <label>Closing Volume (L)</label>
-          <br />
-          <input
-            type="number"
-            value={form.closing_volume}
-            onChange={(e) =>
-              calculateValues(e.target.value, form.deliveries)
-            }
-          />
-
-          <br /><br />
-
-          <label>Expected Volume (L)</label>
-          <br />
-          <input
-            type="number"
-            value={form.expected_volume}
-            readOnly
-          />
-
-          <br /><br />
-
-          <label>Variance (L)</label>
-          <br />
-          <input
-            type="number"
-            value={form.variance}
-            readOnly
-          />
-
-          <br /><br />
-<CameraCapture
-  onCapture={(image) => setEvidenceImage(image)}
-/>
-
-<br />
 
           <button type="submit">
             Save Tank Dip Reading
