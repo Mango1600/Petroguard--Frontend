@@ -16,7 +16,6 @@ import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
 import PaymentSummary from "./PaymentSummary";
-import AttendantDashboard from "./AttendantDashboard";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
   const [policy, setPolicy] = useState(null);
@@ -127,12 +126,6 @@ useEffect(() => {
     if (!permission) return false;
 
     return permission.allowed_roles.includes(staff.role.toLowerCase());
-  }
-
-  if (staff?.role?.toLowerCase() === "attendant") {
-    return (
-      <AttendantDashboard staff={staff} />
-    );
   }
 
   return (

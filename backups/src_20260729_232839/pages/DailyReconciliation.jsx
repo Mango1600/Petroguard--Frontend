@@ -1,0 +1,150 @@
+
+
+
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+import EvidenceUploader from "../components/EvidenceUploader";
+import EvidenceViewer from "../components/EvidenceViewer";
+import VerificationCard from "../components/VerificationCard";
+import GPSLocation from "../components/GPSLocation";
+import ReconciliationSummary from "../components/ReconciliationSummary";
+
+function DailyReconciliation() {
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadReconciliation();
+  }, []);
+
+  async function loadReconciliation() {
+    setLoading(true);
+
+    const { data, error } = await supabase
+  .from("daily_reconciliation")
+  .select("*")
+  .order("reconciliation_date", { ascending: false });
+
+    if (error) {
+      alert(error.message);
+      console.error(error);
+      setLoading(false);
+      return;
+    }
+
+    setRecords(data || []);
+    setLoading(false);
+  }
+
+  if (loading) {
+    return <p>Loading Daily Reconciliation...</p>;
+  }
+
+  return (
+    <div>
+      <h2>Daily Reconciliation</h2>
+
+      <ReconciliationSummary records={records} />
+
+      <h3>Evidence & Verification</h3>
+
+      {records.map((row) => (
+        <div
+          key={row.id}
+          style={{
+            border: "1px solid #ccc",
+            padding: "10px",
+            marginBottom: "15px",
+            borderRadius: "8px",
+          }}
+        >
+          <h4>Record ID: {row.id}</h4>
+
+         <VerificationCard
+  status={row.status || "Pending"}
+  risk={row.risk_level || "Low"}
+  manager={row.verified_by}
+  owner={row.approved_by}
+  comment={row.comment}
+/>
+<GPSLocation />
+<EvidenceUploader
+  reconciliationId={row.id}
+  stationId={row.station_id}
+  onUploaded={loadReconciliation}
+/>
+<EvidenceViewer reconciliationId={row.id} />
+
+          <p>
+            Opening Meter Photo:{" "}
+            {row.opening_meter_photo ? "Captured" : "Missing"}
+          </p>
+
+          <p>
+            Closing Meter Photo:{" "}
+            {row.closing_meter_photo ? "Captured" : "Missing"}
+          </p>
+
+          <p>
+            Video Evidence:{" "}
+            {row.video_evidence ? "Captured" : "Missing"}
+          </p>
+        </div>
+      ))}
+
+      {records.length === 0 ? (
+        <p>No reconciliation records found.</p>
+      ) : (
+        <table border="1" cellPadding="6">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              
+<th>Fuel Sales</th>
+<th>Expected Revenue</th>
+<th>Total Collected</th>
+<th>Revenue Variance</th>
+<th>Variance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {records.map((row) => (
+              <tr key={row.id}>
+                <td>{row.id}</td>
+                <td>{row.reconciliation_date}</td>
+                
+<td>₦{Number(row.fuel_sales || 0).toLocaleString()}</td>
+<td>₦{Number(row.expected_revenue || 0).toLocaleString()}</td>
+<td>
+₦{Number(
+(row.cash_sales || 0) +
+(row.pos_sales || 0) +
+(row.transfer_sales || 0) +
+(row.credit_sales_amount || 0)
+).toLocaleString()}
+</td>
+<td>₦{Number(row.revenue_variance || 0).toLocaleString()}</td>
+<td>₦{Number(row.variance || 0).toLocaleString()}</td>
+                <td>{row.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+export default DailyReconciliation;
+
+
+
+
+
+
+
+

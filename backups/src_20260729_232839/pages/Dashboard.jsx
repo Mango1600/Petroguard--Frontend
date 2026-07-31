@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-
+import OCCPanel from "./OCCPanel";
+import { getOCC } from "../lib/occApi";
 import TankReadings from "./TankReadings";
 import PumpReadings from "./PumpReadings";
-import FuelSales from "./FuelSales";
+import ShiftReconciliation from "./ShiftReconciliation";
 import DailyReconciliation from "./DailyReconciliation";
 import ManagerDashboard from "./ManagerDashboard";
 import StaffManagement from "./StaffManagement";
@@ -16,16 +17,25 @@ import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
 import PaymentSummary from "./PaymentSummary";
-import AttendantDashboard from "./AttendantDashboard";
+import ManagerApproval from "./ManagerApproval";
+import BusinessDayClose from "./BusinessDayClose";
+import CompanySettings from "./CompanySettings";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
   const [policy, setPolicy] = useState(null);
   const [modulePermissions, setModulePermissions] = useState([]);
   const [dashboardSummary, setDashboardSummary] = useState(null);
+const [paymentSummary, setPaymentSummary] = useState(null);
+const [operationStatus, setOperationStatus] = useState({
+  pump: "Pending",
+  tank: "Pending",
+  payment: "Pending",
+  reconciliation: "Pending"
+});
 
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
-  const [showFuelSales, setShowFuelSales] = useState(false);
+  const [showShiftReconciliation, setShowShiftReconciliation] = useState(false);
   const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showStaffManagement, setShowStaffManagement] = useState(false);
@@ -38,7 +48,36 @@ const [showInventoryManagement, setShowInventoryManagement] = useState(false);
 const [showAlertsManagement, setShowAlertsManagement] = useState(false);
 const [showBusinessDayManagement, setShowBusinessDayManagement] = useState(false);
 const [showPaymentSummary, setShowPaymentSummary] = useState(false);
+const [showManagerApproval, setShowManagerApproval] = useState(false);
+const [showBusinessDayClose, setShowBusinessDayClose] = useState(false);
+const [showCompanySettings, setShowCompanySettings] = useState(false);
 
+
+
+
+async function loadOperationStatus() {
+  const pump = await supabase
+    .from("pump_readings")
+    .select("status")
+    .limit(1);
+
+  const tank = await supabase
+    .from("tank_readings")
+    .select("status")
+    .limit(1);
+
+  const recon = await supabase
+    .from("daily_reconciliation")
+    .select("status")
+    .limit(1);
+
+  setOperationStatus({
+    pump: pump.data?.[0]?.status || "Pending",
+    tank: tank.data?.[0]?.status || "Pending",
+    payment: "Pending",
+    reconciliation: recon.data?.[0]?.status || "Pending"
+  });
+}
 
 async function loadDashboardSummary() {
   const { data, error } = await supabase
@@ -59,6 +98,7 @@ useEffect(() => {
   loadStationPolicy();
   loadDashboardSummary();
   loadModulePermissions();
+  loadOperationStatus();
 }, []);
 
 
@@ -129,12 +169,6 @@ useEffect(() => {
     return permission.allowed_roles.includes(staff.role.toLowerCase());
   }
 
-  if (staff?.role?.toLowerCase() === "attendant") {
-    return (
-      <AttendantDashboard staff={staff} />
-    );
-  }
-
   return (
     <div>
       <h1>⛽ PetroGuard Enterprise</h1>
@@ -160,10 +194,10 @@ useEffect(() => {
 
 <table border="1" cellPadding="6">
 <tr><td>🟢 Login</td><td>Completed</td></tr>
-<tr><td>⛽ Pump Reading</td><td>In Progress</td></tr>
-<tr><td>🛢 Tank Dip</td><td>Pending</td></tr>
+<tr><td>⛽ Pump Reading</td><td>{operationStatus.pump}</td></tr>
+<tr><td>🛢 Tank Dip</td><td>{operationStatus.tank}</td></tr>
 <tr><td>💰 Fuel Sales</td><td>Pending</td></tr>
-<tr><td>📊 Reconciliation</td><td>Pending</td></tr>
+<tr><td>📊 Reconciliation</td><td>{operationStatus.reconciliation}</td></tr>
 </table>
 
 <hr />
@@ -185,10 +219,14 @@ useEffect(() => {
 📊 Transactions: {dashboardSummary?.total_transactions || 0}
 </p>
 
-<p>💵 Cash Received: ₦0.00</p>
-<p>💳 POS Sales: ₦0.00</p>
+
+<p>💵 Cash Received: ₦{Number(dashboardSummary?.cash_received || 0).toLocaleString()}</p>
+
+<p>💳 POS Sales: ₦{Number(dashboardSummary?.pos_sales || 0).toLocaleString()}</p>
+
 <p>🏦 Bank Transfers: ₦0.00</p>
-<p>📒 Credit Sales: ₦0.00</p>
+
+<p>📒 Credit Sales: ₦{Number(dashboardSummary?.credit_sales || 0).toLocaleString()}</p>
 <p>⚠ Variance: ₦0.00</p>
 
 <h3>📋 Today's Operations</h3>
@@ -220,12 +258,30 @@ useEffect(() => {
       </button>
       )}
 
-      <button onClick={() => setShowFuelSales(!showFuelSales)}>
-        {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
+      <button onClick={() => setShowShiftReconciliation(!showShiftReconciliation)}>
+        {showShiftReconciliation ? "Hide Shift Reconciliation" : "Open Shift Reconciliation"}
       </button>
 
       <button onClick={() => setShowPaymentSummary(!showPaymentSummary)}>
         {showPaymentSummary ? "Hide Payment Summary" : "Open Payment Summary"}
+      </button>
+
+      <button onClick={() => setShowManagerApproval(!showManagerApproval)}>
+        {showManagerApproval
+          ? "Hide Manager Approval"
+          : "Open Manager Approval"}
+      </button>
+
+      <button onClick={() => setShowBusinessDayClose(!showBusinessDayClose)}>
+        {showBusinessDayClose
+          ? "Hide Business Day Close"
+          : "Open Business Day Close"}
+      </button>
+
+      <button onClick={() => setShowCompanySettings(!showCompanySettings)}>
+        {showCompanySettings
+          ? "Hide Company Settings"
+          : "Open Company Settings"}
       </button>
 
       {canAccess("reconciliation") && (
@@ -304,8 +360,24 @@ useEffect(() => {
       {showStaffManagement && <StaffManagement />}
       {showManagerDashboard && <ManagerDashboard />}
       {showDailyReconciliation && <DailyReconciliation />}
-      {showFuelSales && <FuelSales />}
+      {showShiftReconciliation && (
+        <ShiftReconciliation
+          onBack={() => setShowShiftReconciliation(false)}
+        />
+      )}
       {showPaymentSummary && <PaymentSummary staff={staff} />}
+
+      {showManagerApproval && (
+        <ManagerApproval staff={staff} />
+      )}
+
+      {showBusinessDayClose && (
+        <BusinessDayClose staff={staff} />
+      )}
+
+      {showCompanySettings && (
+        <CompanySettings />
+      )}
       {showPumpReadings && <PumpReadings />}
       {showTankReadings && <TankReadings />}
 

@@ -16,7 +16,6 @@ import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
 import PaymentSummary from "./PaymentSummary";
-import AttendantDashboard from "./AttendantDashboard";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
   const [policy, setPolicy] = useState(null);
@@ -129,12 +128,6 @@ useEffect(() => {
     return permission.allowed_roles.includes(staff.role.toLowerCase());
   }
 
-  if (staff?.role?.toLowerCase() === "attendant") {
-    return (
-      <AttendantDashboard staff={staff} />
-    );
-  }
-
   return (
     <div>
       <h1>⛽ PetroGuard Enterprise</h1>
@@ -224,10 +217,6 @@ useEffect(() => {
         {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
       </button>
 
-      <button onClick={() => setShowPaymentSummary(!showPaymentSummary)}>
-        {showPaymentSummary ? "Hide Payment Summary" : "Open Payment Summary"}
-      </button>
-
       {canAccess("reconciliation") && (
       <button onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}>
         {showDailyReconciliation
@@ -305,7 +294,6 @@ useEffect(() => {
       {showManagerDashboard && <ManagerDashboard />}
       {showDailyReconciliation && <DailyReconciliation />}
       {showFuelSales && <FuelSales />}
-      {showPaymentSummary && <PaymentSummary staff={staff} />}
       {showPumpReadings && <PumpReadings />}
       {showTankReadings && <TankReadings />}
 

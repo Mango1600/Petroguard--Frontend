@@ -15,13 +15,10 @@ import FuelDeliveryManagement from "./FuelDeliveryManagement";
 import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
-import PaymentSummary from "./PaymentSummary";
-import AttendantDashboard from "./AttendantDashboard";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
   const [policy, setPolicy] = useState(null);
   const [modulePermissions, setModulePermissions] = useState([]);
-  const [dashboardSummary, setDashboardSummary] = useState(null);
 
   const [showTankReadings, setShowTankReadings] = useState(false);
   const [showPumpReadings, setShowPumpReadings] = useState(false);
@@ -37,27 +34,10 @@ const [showFuelDeliveryManagement, setShowFuelDeliveryManagement] = useState(fal
 const [showInventoryManagement, setShowInventoryManagement] = useState(false);
 const [showAlertsManagement, setShowAlertsManagement] = useState(false);
 const [showBusinessDayManagement, setShowBusinessDayManagement] = useState(false);
-const [showPaymentSummary, setShowPaymentSummary] = useState(false);
-
-
-async function loadDashboardSummary() {
-  const { data, error } = await supabase
-    .from("dashboard_summary")
-    .select("*")
-    .single();
-
-  if (error) {
-    console.log("Dashboard summary error:", error);
-    return;
-  }
-
-  setDashboardSummary(data);
-}
 
 useEffect(() => {
   loadStation();
   loadStationPolicy();
-  loadDashboardSummary();
   loadModulePermissions();
 }, []);
 
@@ -129,12 +109,6 @@ useEffect(() => {
     return permission.allowed_roles.includes(staff.role.toLowerCase());
   }
 
-  if (staff?.role?.toLowerCase() === "attendant") {
-    return (
-      <AttendantDashboard staff={staff} />
-    );
-  }
-
   return (
     <div>
       <h1>⛽ PetroGuard Enterprise</h1>
@@ -173,18 +147,8 @@ useEffect(() => {
 
 <h3>📈 Today's KPIs</h3>
 
-<p>
-⛽ Litres Sold: {dashboardSummary?.total_liters_sold || 0} L
-</p>
-
-<p>
-💰 Expected Revenue: ₦{Number(dashboardSummary?.total_revenue || 0).toLocaleString()}
-</p>
-
-<p>
-📊 Transactions: {dashboardSummary?.total_transactions || 0}
-</p>
-
+<p>⛽ Litres Sold: 0 L</p>
+<p>💰 Expected Revenue: ₦0.00</p>
 <p>💵 Cash Received: ₦0.00</p>
 <p>💳 POS Sales: ₦0.00</p>
 <p>🏦 Bank Transfers: ₦0.00</p>
@@ -222,10 +186,6 @@ useEffect(() => {
 
       <button onClick={() => setShowFuelSales(!showFuelSales)}>
         {showFuelSales ? "Hide Fuel Sales" : "Open Fuel Sales"}
-      </button>
-
-      <button onClick={() => setShowPaymentSummary(!showPaymentSummary)}>
-        {showPaymentSummary ? "Hide Payment Summary" : "Open Payment Summary"}
       </button>
 
       {canAccess("reconciliation") && (
@@ -305,7 +265,6 @@ useEffect(() => {
       {showManagerDashboard && <ManagerDashboard />}
       {showDailyReconciliation && <DailyReconciliation />}
       {showFuelSales && <FuelSales />}
-      {showPaymentSummary && <PaymentSummary staff={staff} />}
       {showPumpReadings && <PumpReadings />}
       {showTankReadings && <TankReadings />}
 

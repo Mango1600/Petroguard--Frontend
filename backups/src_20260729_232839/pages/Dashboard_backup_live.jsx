@@ -16,7 +16,9 @@ import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
 import PaymentSummary from "./PaymentSummary";
-import AttendantDashboard from "./AttendantDashboard";
+import ManagerApproval from "./ManagerApproval";
+import BusinessDayClose from "./BusinessDayClose";
+import CompanySettings from "./CompanySettings";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
   const [policy, setPolicy] = useState(null);
@@ -38,6 +40,9 @@ const [showInventoryManagement, setShowInventoryManagement] = useState(false);
 const [showAlertsManagement, setShowAlertsManagement] = useState(false);
 const [showBusinessDayManagement, setShowBusinessDayManagement] = useState(false);
 const [showPaymentSummary, setShowPaymentSummary] = useState(false);
+const [showManagerApproval, setShowManagerApproval] = useState(false);
+const [showBusinessDayClose, setShowBusinessDayClose] = useState(false);
+const [showCompanySettings, setShowCompanySettings] = useState(false);
 
 
 async function loadDashboardSummary() {
@@ -127,12 +132,6 @@ useEffect(() => {
     if (!permission) return false;
 
     return permission.allowed_roles.includes(staff.role.toLowerCase());
-  }
-
-  if (staff?.role?.toLowerCase() === "attendant") {
-    return (
-      <AttendantDashboard staff={staff} />
-    );
   }
 
   return (
@@ -228,6 +227,24 @@ useEffect(() => {
         {showPaymentSummary ? "Hide Payment Summary" : "Open Payment Summary"}
       </button>
 
+      <button onClick={() => setShowManagerApproval(!showManagerApproval)}>
+        {showManagerApproval
+          ? "Hide Manager Approval"
+          : "Open Manager Approval"}
+      </button>
+
+      <button onClick={() => setShowBusinessDayClose(!showBusinessDayClose)}>
+        {showBusinessDayClose
+          ? "Hide Business Day Close"
+          : "Open Business Day Close"}
+      </button>
+
+      <button onClick={() => setShowCompanySettings(!showCompanySettings)}>
+        {showCompanySettings
+          ? "Hide Company Settings"
+          : "Open Company Settings"}
+      </button>
+
       {canAccess("reconciliation") && (
       <button onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}>
         {showDailyReconciliation
@@ -306,6 +323,18 @@ useEffect(() => {
       {showDailyReconciliation && <DailyReconciliation />}
       {showFuelSales && <FuelSales />}
       {showPaymentSummary && <PaymentSummary staff={staff} />}
+
+      {showManagerApproval && (
+        <ManagerApproval staff={staff} />
+      )}
+
+      {showBusinessDayClose && (
+        <BusinessDayClose staff={staff} />
+      )}
+
+      {showCompanySettings && (
+        <CompanySettings />
+      )}
       {showPumpReadings && <PumpReadings />}
       {showTankReadings && <TankReadings />}
 

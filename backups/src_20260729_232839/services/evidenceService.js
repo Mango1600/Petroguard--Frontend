@@ -125,26 +125,73 @@ export async function uploadVideoEvidence({
   recordId,
   moduleName,
   uploadedBy = null,
+  companyId = null,
   description = null,
+  latitude = null,
+  longitude = null,
 }) {
   try {
-    const filePath = `${moduleName}/${Date.now()}-${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(APP_CONFIG.STORAGE.EVIDENCE_BUCKET)
-      .upload(filePath, videoBlob, {
-        contentType: "video/webm",
-        upsert: false,
-      });
+    const filePath =
+      `${moduleName}/${Date.now()}-${fileName}`;
 
-    if (error) throw error;
+    const { error: storageError } =
+      await supabase.storage
+        .from(APP_CONFIG.STORAGE.EVIDENCE_BUCKET)
+        .upload(filePath, videoBlob, {
+          contentType: "video/webm",
+          upsert: false,
+        });
+
+    if (storageError) throw storageError;
+
+
+    const { data: evidence, error: evidenceError } =
+      await supabase
+        .from("evidence")
+        .insert({
+          company_id: companyId,
+          station_id: stationId,
+          uploaded_by: uploadedBy,
+          evidence_type: "video",
+          file_name: fileName,
+          file_path: filePath,
+          mime_type: "video/webm",
+          capture_time: new Date(),
+          latitude,
+          longitude,
+          description,
+        })
+        .select()
+        .single();
+
+
+    if (evidenceError) throw evidenceError;
+
+
+    const { error: linkError } =
+      await supabase
+        .from("evidence_links")
+        .insert({
+          evidence_id: evidence.id,
+          module_name: moduleName,
+          record_id: String(recordId),
+        });
+
+
+    if (linkError) throw linkError;
+
 
     return {
       success: true,
-      filePath,
+      evidence,
     };
+
+
   } catch (error) {
+
     console.error("Video Upload Error:", error);
+
     return {
       success: false,
       error,
