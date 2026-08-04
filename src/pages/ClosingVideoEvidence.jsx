@@ -47,7 +47,6 @@ export default function ClosingVideoEvidence({
         onClick={()=>{
 
           if(!video){
-            alert("Capture closing video");
             return;
           }
 

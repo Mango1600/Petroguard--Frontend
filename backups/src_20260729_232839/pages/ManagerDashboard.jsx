@@ -28,11 +28,9 @@ async function approveShift(id) {
     .eq("id",id);
 
   if(error){
-    alert(error.message);
     return;
   }
 
-  alert("✅ Shift Approved and Locked 🔒");
   loadPendingShifts();
 }
 
@@ -63,7 +61,6 @@ useEffect(() => {
 
     if (error) {
       console.error("Manager Dashboard Error:", error);
-      alert(error.message);
       return;
     }
 

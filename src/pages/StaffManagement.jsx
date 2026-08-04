@@ -35,7 +35,6 @@ export default function StaffManagement() {
 
   if (error) {
     console.error(error);
-    alert(error.message);
     return;
   }
 
@@ -59,7 +58,6 @@ export default function StaffManagement() {
       ]);
 
     if (error) {
-      alert(error.message);
       return;
     }
 

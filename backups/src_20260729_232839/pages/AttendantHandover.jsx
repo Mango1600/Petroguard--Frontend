@@ -11,7 +11,6 @@ export default function AttendantHandover({ shift, currentAttendant }) {
   async function handover(){
 
     if(!staffId){
-      alert("Select incoming attendant");
       return;
     }
 

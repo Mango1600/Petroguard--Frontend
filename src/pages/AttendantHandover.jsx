@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { handoverAssignment } from "../lib/pumpShiftAssignment";
 import ShiftActive from "./ShiftActive";
 
 export default function AttendantHandover({ shift, currentAttendant }) {
@@ -8,38 +8,40 @@ export default function AttendantHandover({ shift, currentAttendant }) {
   const [openingEvidence,setOpeningEvidence]=useState("");
   const [done,setDone]=useState(false);
 
+
   async function handover(){
 
     if(!staffId){
-      alert("Select incoming attendant");
+      alert("Incoming staff required");
       return;
     }
 
-    const now=new Date().toISOString();
+    try {
 
-    await supabase
-      .from("shift_attendants")
-      .update({
-        status:"HANDED_OVER",
-        clock_out:now,
-        closing_video:openingEvidence
-      })
-      .eq("shift_id",shift.id)
-      .eq("staff_id",currentAttendant.id);
+      await handoverAssignment({
 
-    await supabase
-      .from("shift_attendants")
-      .insert([{
-        shift_id:shift.id,
-        pump_id:shift.pump_id,
-        station_id:shift.station_id,
-        staff_id:Number(staffId),
-        status:"ACTIVE",
-        clock_in:now,
-        opening_video:openingEvidence
-      }]);
+        assignmentId: shift.assignment_id,
 
-    setDone(true);
+        pumpShiftId: shift.id,
+
+        currentClosingMeter: shift.closing_meter,
+
+        closingEvidence: openingEvidence,
+
+        nextStaffId: Number(staffId)
+
+      });
+
+      setDone(true);
+
+    } catch(error){
+
+      console.log(error);
+
+      alert(error.message);
+
+    }
+
   }
 
   if(done){

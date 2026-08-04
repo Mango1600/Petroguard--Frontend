@@ -60,12 +60,10 @@ async function saveAndStartShift() {
   try {
 
     if (!openingMeter || !pump?.id) {
-      alert("Opening meter and pump required");
       return;
     }
 
     if (!openingMeter) {
-      alert("Opening meter required");
       return;
     }
 
@@ -85,7 +83,6 @@ async function saveAndStartShift() {
 
     if (shiftError) {
       console.log(shiftError);
-      alert("Shift creation failed");
       return;
     }
 
@@ -103,12 +100,10 @@ async function saveAndStartShift() {
 
     if (attendantError) {
       console.log(attendantError);
-      alert("Attendant assignment failed");
       return;
     }
 
 
-    alert("✅ PetroGuard Shift Started");
 
     window.location.reload();
 
@@ -116,7 +111,6 @@ async function saveAndStartShift() {
   } catch (error) {
 
     console.log(error);
-    alert("Error starting shift");
 
   }
 
@@ -165,7 +159,6 @@ async function saveEvidence(fileData){
 
     if(error){
       console.log(error);
-      alert("Evidence save failed");
       return;
     }
 
@@ -186,7 +179,6 @@ async function saveEvidence(fileData){
   } catch(err){
 
     console.log(err);
-    alert("Evidence error");
 
   }
 

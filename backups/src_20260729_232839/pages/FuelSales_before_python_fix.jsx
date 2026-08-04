@@ -26,7 +26,6 @@ export default function FuelSales() {
 
   async function saveReceipt() {
     if (!stationId) {
-      alert("Select station");
       return;
     }
 
@@ -56,11 +55,9 @@ console.log({
     setLoading(false);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Daily receipt saved");
 
     setCash("");
     setPos("");

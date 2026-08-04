@@ -3,7 +3,6 @@ import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
 import { uploadEvidence } from "../services/evidenceService";
 export default function TankDipEntry({ staff }) {
-  console.log("TankDipEntry staff:", staff);
   const [tanks, setTanks] = useState([]);
   const [loading, setLoading] = useState(false);
 const [evidenceImage, setEvidenceImage] = useState(null);
@@ -27,7 +26,6 @@ const [evidenceImage, setEvidenceImage] = useState(null);
 
   async function loadTanks() {
     if (!staff?.station_id) {
-      console.log("No staff station yet");
       return;
     }
 
@@ -38,13 +36,11 @@ const [evidenceImage, setEvidenceImage] = useState(null);
       .select("*")
       .eq("station_id", staff.station_id)
       .order("tank_name");
-console.log("STAFF:", staff);
 console.log("TANKS:", data);
 console.log("ERROR:", error);
 
 
     if (error) {
-      alert(error.message);
       setLoading(false);
       return;
     }
@@ -96,12 +92,10 @@ console.log("ERROR:", error);
   async function saveReading(e) {
     e.preventDefault();
 if (!form.tank_id) {
-  alert("Please select a tank.");
   return;
 }
 
 if (Number(form.closing_volume) <= 0) {
-  alert("Closing volume must be greater than zero.");
   return;
 }
 
@@ -110,7 +104,6 @@ if (
   Number(form.deliveries) === 0 &&
   Number(form.closing_volume) > 0
 ) {
-  alert(
     "Opening volume cannot be zero for a normal tank dip. Use Initial Stock Entry for a new tank."
   );
   return;
@@ -138,7 +131,6 @@ if (
       .single();
 
     if (error) {
-      alert(error.message);
       return;
     }
 if (evidenceImage) {
@@ -159,7 +151,6 @@ await supabase
   })
   .eq("id", Number(form.tank_id));
 
-    alert("Tank dip reading saved successfully.");
 
     setForm({
       tank_id: "",

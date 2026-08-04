@@ -16,6 +16,7 @@ import InventoryManagement from "./InventoryManagement";
 import AlertsManagement from "./AlertsManagement";
 import BusinessDayManagement from "./BusinessDayManagement";
 import PaymentSummary from "./PaymentSummary";
+import OperationsAnalysis from "./OperationsAnalysis";
 import AttendantDashboard from "./AttendantDashboard";
 export default function Dashboard({ staff }) {
   const [station, setStation] = useState(null);
@@ -38,6 +39,8 @@ const [showInventoryManagement, setShowInventoryManagement] = useState(false);
 const [showAlertsManagement, setShowAlertsManagement] = useState(false);
 const [showBusinessDayManagement, setShowBusinessDayManagement] = useState(false);
 const [showPaymentSummary, setShowPaymentSummary] = useState(false);
+const [showOperationsAnalysis, setShowOperationsAnalysis] = useState(false);
+  const [salesContext, setSalesContext] = useState(null);
 
 
 async function loadDashboardSummary() {
@@ -57,7 +60,7 @@ async function loadDashboardSummary() {
 useEffect(() => {
   loadStation();
   loadStationPolicy();
-  loadDashboardSummary();
+  // loadDashboardSummary();
   loadModulePermissions();
 }, []);
 
@@ -131,7 +134,13 @@ useEffect(() => {
 
   if (staff?.role?.toLowerCase() === "attendant") {
     return (
-      <AttendantDashboard staff={staff} />
+      <AttendantDashboard
+        staff={staff}
+        openSales={(context) => {
+          setSalesContext(context);
+          setShowFuelSales(true);
+        }}
+      />
     );
   }
 
@@ -228,6 +237,12 @@ useEffect(() => {
         {showPaymentSummary ? "Hide Payment Summary" : "Open Payment Summary"}
       </button>
 
+      <br /><br />
+
+      <button onClick={() => setShowOperationsAnalysis(!showOperationsAnalysis)}>
+        {showOperationsAnalysis ? "Hide Operations Analysis" : "Open Operations Analysis"}
+      </button>
+
       {canAccess("reconciliation") && (
       <button onClick={() => setShowDailyReconciliation(!showDailyReconciliation)}>
         {showDailyReconciliation
@@ -304,8 +319,12 @@ useEffect(() => {
       {showStaffManagement && <StaffManagement />}
       {showManagerDashboard && <ManagerDashboard />}
       {showDailyReconciliation && <DailyReconciliation />}
-      {showFuelSales && <FuelSales />}
+      {showFuelSales && (
+        <FuelSales salesContext={salesContext} />
+      )}
       {showPaymentSummary && <PaymentSummary staff={staff} />}
+
+      {showOperationsAnalysis && <OperationsAnalysis staff={staff} />}
       {showPumpReadings && <PumpReadings />}
       {showTankReadings && <TankReadings />}
 
@@ -342,3 +361,7 @@ useEffect(() => {
 </div>
   );
 }
+
+// Module 6 — Pump Shift Reconciliation
+// Navigation integration added
+

@@ -6,7 +6,6 @@ export default function GPSLocation({ onLocation }) {
 
   function getLocation() {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported on this device.");
       return;
     }
 
@@ -28,7 +27,6 @@ export default function GPSLocation({ onLocation }) {
         setLoading(false);
       },
       (error) => {
-        alert(error.message);
         setLoading(false);
       },
       {
@@ -67,4 +65,3 @@ export default function GPSLocation({ onLocation }) {
     </div>
   );
 }
-

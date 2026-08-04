@@ -16,6 +16,7 @@ export default function Login({ onLogin, goToActivate }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {
+      alert(error.message);
       setMessage(error.message);
       return;
     }
@@ -33,31 +34,23 @@ export default function Login({ onLogin, goToActivate }) {
       password,
     });
 
-    console.log("========== AUTH RESULT ==========");
-    console.log("AUTH DATA:", data);
-    console.log("AUTH USER:", data?.user);
-    console.log("AUTH SESSION:", data?.session);
-    console.log("AUTH ERROR:", error);
-    console.log("================================");
-
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
     const user = data.user;
 
+    setMessage("Auth OK - Loading staff...");
+    
     const { data: staffRows, error: staffError } = await supabase
       .from("staff")
       .select("*")
       .eq("user_id", user.id);
 
+    console.log("STAFF RESULT", staffRows, staffError);
+
     if (staffError) {
-      console.log(staffError);
-      setMessage(staffError.message);
+      setMessage("STAFF ERROR: " + staffError.message);
       return;
     }
+
+    setMessage("STAFF ROWS: " + String(staffRows ? staffRows.length : 0));
 
     if (!staffRows || staffRows.length === 0) {
       setMessage("No staff record linked to this account.");
@@ -72,9 +65,8 @@ export default function Login({ onLogin, goToActivate }) {
     }
 
     
-console.log("LOGIN SUCCESS", staff);
-alert("LOGIN SUCCESS: " + JSON.stringify(staff));
 onLogin(staff);
+    setMessage("AFTER ONLOGIN");
 
   }
 

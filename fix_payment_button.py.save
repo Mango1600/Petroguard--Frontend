@@ -1,0 +1,14 @@
+from pathlib import Path
+
+p = Path("src/pages/Dashboard.jsx")
+
+s = p.read_text()
+
+s = s.replace(
+    'Open Business Day Management\n<button',
+    'Open Business Day Management"}\n        </button>\n\n        <button'
+)
+
+p.write_text(s)
+
+print("Fixed")

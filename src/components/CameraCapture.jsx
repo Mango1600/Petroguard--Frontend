@@ -1,15 +1,71 @@
 import { useRef, useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
-export default function CameraCapture({ onCapture }) {
+export default function CameraCapture({
+  onCapture,
+  mode = "both",
+  title = "Enterprise Evidence Capture"
+}) {
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
 
   const [cameraOpen, setCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
-  const [capturedImage, setCapturedImage] = useState(null);
+
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [recordedVideo, setRecordedVideo] = useState(null);
+
+  const [recording, setRecording] = useState(false);
+
+  const [gps, setGps] = useState(null);
+  const [deviceInfo, setDeviceInfo] = useState("");
+  const [networkInfo, setNetworkInfo] = useState("");
+  const [batteryLevel, setBatteryLevel] = useState("");
+  const [timestamp, setTimestamp] = useState("");
+  const [shaHash, setShaHash] = useState("");
+  const [aiVerified] = useState(false);
+
   const [error, setError] = useState("");
 
+
   useEffect(() => {
+
+    setTimestamp(new Date().toISOString());
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setGps({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          });
+        },
+        () => {}
+      );
+    }
+
+    setDeviceInfo(navigator.userAgent);
+
+    if (navigator.connection) {
+      setNetworkInfo(
+        navigator.connection.effectiveType || ""
+      );
+    }
+
+    if (navigator.getBattery) {
+      navigator.getBattery().then((battery) => {
+        setBatteryLevel(
+          Math.round(battery.level * 100)
+        );
+      });
+    }
+
+  }, []);
+
+
+useEffect(() => {
     if (!cameraOpen) return;
 
     async function startCamera() {
@@ -55,7 +111,7 @@ export default function CameraCapture({ onCapture }) {
 
     const image = canvas.toDataURL("image/jpeg", 0.9);
 
-    setCapturedImage(image);
+    setCapturedPhoto(image);
 
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
@@ -64,14 +120,44 @@ export default function CameraCapture({ onCapture }) {
     setCameraOpen(false);
   }
 
-  function usePhoto() {
-    if (onCapture && capturedImage) {
-      onCapture(capturedImage);
+
+  async function uploadEvidence() {
+
+    if (!capturedPhoto) return null;
+
+    const response = await fetch(capturedPhoto);
+    const blob = await response.blob();
+
+    const fileName =
+      `opening/${Date.now()}.jpg`;
+
+    const { data, error } =
+      await supabase.storage
+        .from("petroguard-evidence")
+        .upload(fileName, blob, {
+          contentType: "image/jpeg"
+        });
+
+    if (error) {
+      console.error(error);
+      setError("Evidence upload failed.");
+      return null;
+    }
+
+    return data.path;
+  }
+
+  async function usePhoto() {
+
+    const path = await uploadEvidence();
+
+    if (onCapture && path) {
+      onCapture(path);
     }
   }
 
   function retakePhoto() {
-    setCapturedImage(null);
+    setCapturedPhoto(null);
     setCameraOpen(true);
   }  return (
     <div>
@@ -79,7 +165,7 @@ export default function CameraCapture({ onCapture }) {
 
       {error && <p>{error}</p>}
 
-      {!cameraOpen && !capturedImage && (
+      {!cameraOpen && !capturedPhoto && (
         <button onClick={() => setCameraOpen(true)}>
           📷 Capture Evidence
         </button>
@@ -119,10 +205,10 @@ export default function CameraCapture({ onCapture }) {
         </>
       )}
 
-      {capturedImage && (
+      {capturedPhoto && (
         <>
           <img
-            src={capturedImage}
+            src={capturedPhoto}
             alt="Evidence"
             style={{
               width: "100%",

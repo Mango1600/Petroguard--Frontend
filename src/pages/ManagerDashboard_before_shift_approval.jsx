@@ -31,7 +31,6 @@ export default function ManagerDashboard() {
 
     if (error) {
       console.error("Manager Dashboard Error:", error);
-      alert(error.message);
       return;
     }
 

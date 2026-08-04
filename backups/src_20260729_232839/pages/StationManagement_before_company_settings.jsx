@@ -36,7 +36,6 @@ export default function StationManagement() {
       .order("id");
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -50,7 +49,6 @@ export default function StationManagement() {
       .order("company_name");
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -74,7 +72,6 @@ export default function StationManagement() {
       ]);
 
     if (error) {
-      alert(error.message);
       return;
     }
 

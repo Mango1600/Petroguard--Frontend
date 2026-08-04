@@ -75,11 +75,9 @@ function FuelSales() {
       ]);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Fuel sale saved successfully!");
 
     setStationId("");
     setPumpId("");

@@ -31,7 +31,6 @@ export default function ManagerApproval({ staff }) {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -54,7 +53,6 @@ export default function ManagerApproval({ staff }) {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       return;
     }
 

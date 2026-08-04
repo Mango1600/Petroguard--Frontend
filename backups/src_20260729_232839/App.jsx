@@ -40,7 +40,6 @@ export default function App() {
   }
 
   const role = (staff.role || "").toLowerCase();
-  console.log("LOGIN STAFF:", staff, "ROLE:", role);
 
   if (role === "developer") {
     return <Dashboard staff={staff} />;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import CameraCapture from "../components/CameraCapture";
 
 function PumpReadings() {
   const [readings, setReadings] = useState([]);
@@ -9,6 +10,14 @@ function PumpReadings() {
   const [fuelPrices, setFuelPrices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [activeShift, setActiveShift] = useState(null);
+  const [activeAssignment, setActiveAssignment] = useState(null);
+
+  const [openingMeter, setOpeningMeter] = useState("");
+  const [closingMeter, setClosingMeter] = useState("");
+  const [openingEvidence, setOpeningEvidence] = useState("");
+  const [closingEvidence, setClosingEvidence] = useState("");
 
   useEffect(() => {
     loadData();
@@ -46,7 +55,7 @@ function PumpReadings() {
         .order("id"),
 
       supabase
-        .from("staff_shifts")
+        .from("pump_shifts")
         .select("*")
         .order("id"),
 
@@ -82,6 +91,79 @@ function PumpReadings() {
 
 
 
+
+
+  async function loadActivePumpShift() {
+
+    const { data: shift } = await supabase
+      .from("pump_shifts")
+      .select(`
+        *,
+        attendant_assignments(
+          id,
+          staff_id,
+          status
+        )
+      `)
+      .eq("status", "OPEN")
+      .single();
+
+    if (!shift) return;
+
+    const assignment = shift.attendant_assignments?.find(
+      (a) => a.status === "ACTIVE"
+    );
+
+    setActiveShift(shift);
+    setActiveAssignment(assignment);
+  }
+
+
+  async function savePumpReading() {
+
+    if (
+      !activeShift ||
+      !activeAssignment ||
+      !openingMeter ||
+      !closingMeter
+    ) {
+      alert("Complete pump shift, assignment and meter details");
+      return;
+    }
+
+
+    const { error } = await supabase
+      .from("pump_readings")
+      .insert([
+        {
+          business_day_id: activeShift.business_day_id,
+          pump_shift_id: activeShift.id,
+          assignment_id: activeAssignment.id,
+          staff_id: activeAssignment.staff_id,
+          pump_id: activeShift.pump_id,
+
+          opening_meter: Number(openingMeter),
+          closing_meter: Number(closingMeter),
+
+          opening_meter_photo: openingEvidence,
+          closing_meter_photo: closingEvidence,
+
+          status: "draft"
+        }
+      ]);
+
+
+    if (error) {
+      console.log(error);
+      alert(error.message);
+      return;
+    }
+
+    alert("Pump Reading Saved");
+
+    loadData();
+  }
+
   async function submitReading(id) {
     const { error } = await supabase
       .from("pump_readings")
@@ -92,12 +174,10 @@ function PumpReadings() {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       console.log(error);
       return;
     }
 
-    alert("Submitted successfully");
     loadData();
   }
 
@@ -111,11 +191,9 @@ function PumpReadings() {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Verified successfully");
     loadData();
   }
 
@@ -132,16 +210,13 @@ function PumpReadings() {
     console.log("Approve result:", data, error);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
     if (!data || data.length === 0) {
-      alert("No row was updated.");
       return;
     }
 
-    alert("Approved successfully");
     loadData();
   }
 
@@ -179,6 +254,61 @@ function PumpReadings() {
     <div>
       <h2>Pump Readings</h2>
 
+      {activeShift && activeAssignment && (
+        <div>
+          <h3>🟢 Active Pump Shift Capture</h3>
+
+          <p>
+            Pump Shift ID: {activeShift.id}
+          </p>
+
+          <p>
+            Assignment ID: {activeAssignment.id}
+          </p>
+
+          <input
+            type="number"
+            placeholder="Opening Meter"
+            value={openingMeter}
+            onChange={(e)=>setOpeningMeter(e.target.value)}
+          />
+
+          <br />
+
+          <CameraCapture
+            onCapture={(file)=>{
+              setOpeningEvidence(file);
+            }}
+          />
+
+          <br />
+
+          <input
+            type="number"
+            placeholder="Closing Meter"
+            value={closingMeter}
+            onChange={(e)=>setClosingMeter(e.target.value)}
+          />
+
+          <br />
+
+          <CameraCapture
+            onCapture={(file)=>{
+              setClosingEvidence(file);
+            }}
+          />
+
+          <br />
+
+          <button onClick={savePumpReading}>
+            Save Pump Reading
+          </button>
+
+          <hr />
+        </div>
+      )}
+
+
       {readings.length === 0 ? (
         <p>No pump readings found.</p>
       ) : (
@@ -193,7 +323,7 @@ function PumpReadings() {
             </p>
 
             <p>
-              Shift ID: {reading.staff_shift_id || "Not assigned"}
+              Shift ID: {reading.pump_shift_id || "Not assigned"}
             </p>
 
             <p>

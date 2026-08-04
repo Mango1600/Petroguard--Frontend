@@ -24,7 +24,6 @@ export default function ManagerDashboard() {
       .eq("role", "Attendant");
 
     if (error) {
-      alert(error.message);
       return;
     }
 

@@ -30,7 +30,6 @@ export default function ShiftReconciliation({ onBack }) {
   
   async function submitShift() {
     if (!stationId) {
-      alert("Select a station first.");
       return;
     }
 
@@ -48,12 +47,10 @@ export default function ShiftReconciliation({ onBack }) {
     setLoading(false);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
     setSubmitted(true);
-    alert("✅ Shift submitted for Manager Approval");
   }
 
 async function loadReceipts() {
@@ -67,7 +64,6 @@ async function loadReceipts() {
 
   async function saveReceipt() {
     if (!stationId) {
-      alert("Select station");
       return;
     }
 
@@ -106,11 +102,9 @@ console.log({
     setLoading(false);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Daily receipt saved");
 
     setCash("");
     setPos("");

@@ -23,7 +23,6 @@ export default function CompanySettings() {
   }
 
   function saveSettings() {
-    alert("Company Settings saved successfully.");
   }
 
   return (

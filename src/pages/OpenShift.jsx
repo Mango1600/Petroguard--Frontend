@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import AttendantPumpReading from "./AttendantPumpReading";
 import VideoCapture from "../components/VideoCapture";
+import { getOpenBusinessDay } from "../lib/businessDay";
+import { createPumpShift } from "../lib/pumpShift";
+import { createAssignment, nextAssignmentNumber } from "../lib/pumpShiftAssignment";
 
 export default function OpenShift({ staff, onShiftOpened }) {
   const [activeShift, setActiveShift] = useState(null);
@@ -42,42 +45,93 @@ export default function OpenShift({ staff, onShiftOpened }) {
   }
 
   async function createShift() {
-    const { data: newShift, error } = await supabase
-      .from("staff_shifts")
-      .insert([{
-        staff_id: staff.id,
-        station_id: staff.station_id,
-        pump_id: Number(pumpId),
-        opening_meter: Number(openingMeter),
-        shift_date: new Date().toISOString().split("T")[0],
-        clock_in: new Date().toLocaleTimeString("en-GB"),
-        status: "open"
-      }])
-      .select()
-      .single();
+    console.log("CREATE SHIFT STARTED", {
+      staff: staff?.id,
+      pumpId,
+      openingMeter
+    });
 
-    if (error) {
+
+    try {
+
+      const { data: businessDay, error: bdError } =
+        await getOpenBusinessDay(staff.station_id);
+
+
+      if (bdError) {
+        throw bdError;
+      }
+
+
+      if (!businessDay) {
+        throw new Error("No OPEN Business Day found.");
+      }
+
+
+      const pumpShift = await createPumpShift({
+
+        businessDayId: businessDay.id,
+
+        pumpId: Number(pumpId),
+
+        openingMeter: Number(openingMeter),
+
+        openingEvidence: null,
+
+        staffId: staff.id
+
+      });
+
+
+      console.log('Creating assignment', pumpShift);
+
+      console.log("BEFORE CREATE ASSIGNMENT", {
+  pumpShiftId: pumpShift.id,
+  staffId: staff.id
+});
+
+console.log("BEFORE CREATE ASSIGNMENT", {
+  pumpShiftId: pumpShift.id,
+  staffId: staff.id
+});
+
+await createAssignment({
+
+        pumpShiftId: pumpShift.id,
+
+        staffId: staff.id,
+
+        assignmentNo: await nextAssignmentNumber(pumpShift.id),
+
+        openingMeter: Number(openingMeter),
+
+        openingEvidence: null,
+
+        assignedBy: staff.id
+
+      });
+
+
+      setActiveShift(pumpShift);
+
+      setMessage("✅ Pump Shift opened");
+
+
+      if (onShiftOpened) {
+        onShiftOpened();
+      }
+
+
+    } catch(error) {
+
+      console.log(error);
+
       setMessage(error.message);
-      return;
+
     }
 
-    setActiveShift(newShift);
-
-    await supabase
-      .from("shift_attendants")
-      .insert([{
-        shift_id: newShift.id,
-        staff_id: staff.id,
-        station_id: staff.station_id,
-        activity_type: "OPENED_SHIFT"
-      }]);
-
-    setMessage("✅ Shift opened");
-
-    if (onShiftOpened) {
-      onShiftOpened();
-    }
   }
+
 
   if (showVideo) {
     console.log("OpenShift state", {showVideo, activeShift, showPumpReading});

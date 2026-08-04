@@ -27,7 +27,6 @@ function DailyReconciliation() {
   .order("reconciliation_date", { ascending: false });
 
     if (error) {
-      alert(error.message);
       console.error(error);
       setLoading(false);
       return;
@@ -131,7 +130,6 @@ function DailyReconciliation() {
 }
 
 export default DailyReconciliation;
-
 
 
 

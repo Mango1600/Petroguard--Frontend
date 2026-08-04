@@ -1,0 +1,67 @@
+[1mdiff --git a/src/App.jsx b/src/App.jsx[m
+[1mindex 18ca54e..5090d7f 100644[m
+[1m--- a/src/App.jsx[m
+[1m+++ b/src/App.jsx[m
+[36m@@ -1,17 +1,54 @@[m
+ import { useState } from "react";[m
+ import Dashboard from "./pages/Dashboard";[m
+[32m+[m[32mimport ManagerDashboard from "./pages/ManagerDashboard";[m
+[32m+[m[32mimport AttendantDashboard from "./pages/AttendantDashboard";[m
+ import Login from "./pages/Login";[m
+[32m+[m[32mimport Welcome from "./pages/Welcome";[m
+[32m+[m[32mimport ActivateAccount from "./pages/ActivateAccount";[m
+[32m+[m[32mimport StaffManagement from "./pages/StaffManagement";[m
+[32m+[m[32mimport ShiftSubmission from "./pages/ShiftSubmission";[m
+ [m
+ export default function App() {[m
+   const [staff, setStaff] = useState(null);[m
+[32m+[m[32m  const [page, setPage] = useState("login");[m
+[32m+[m[32m  const [showWelcome, setShowWelcome] = useState(false);[m
+ [m
+   if (!staff) {[m
+[31m-    return <Login onLogin={setStaff} />;[m
+[32m+[m[32m    if (page === "activate") {[m
+[32m+[m[32m      return ([m
+[32m+[m[32m        <ActivateAccount[m
+[32m+[m[32m          goToLogin={() => setPage("login")}[m
+[32m+[m[32m        />[m
+[32m+[m[32m      );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return ([m
+[32m+[m[32m      <Login[m
+[32m+[m[32m        onLogin={(user) => { setStaff(user); setShowWelcome(true); }}[m
+[32m+[m[32m        goToActivate={() => setPage("activate")}[m
+[32m+[m[32m      />[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  if (showWelcome) {[m
+[32m+[m[32m    return ([m
+[32m+[m[32m      <Welcome[m
+[32m+[m[32m        staff={staff}[m
+[32m+[m[32m        continueApp={() => setShowWelcome(false)}[m
+[32m+[m[32m      />[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  const role = (staff.role || "").toLowerCase();[m
+[32m+[m[32m  console.log("LOGIN STAFF:", staff, "ROLE:", role);[m
+[32m+[m
+[32m+[m[32m  if (role === "developer") {[m
+[32m+[m[32m    return <Dashboard staff={staff} />;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  if (role === "manager") {[m
+[32m+[m[32m    return <ManagerDashboard staff={staff} />;[m
+   }[m
+ [m
+[31m-  return ([m
+[31m-    <Dashboard[m
+[31m-      staff={staff}[m
+[31m-    />[m
+[31m-  );[m
+[31m-}[m
+[32m+[m[32m  return <AttendantDashboard staff={staff} />;[m
+[32m+[m[32m}[m
+\ No newline at end of file[m

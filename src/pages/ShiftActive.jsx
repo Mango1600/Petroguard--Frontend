@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import AttendantHandover from "./AttendantHandover";
 import ClosingPumpMeter from "./ClosingPumpMeter";
 
 export default function ShiftActive({shift}){
 
+const [handover,setHandover] = useState(false);
+const [closing,setClosing] = useState(false);
+
+
 return (
 <div style={{padding:20}}>
+
+{handover && (
+  <AttendantHandover shift={shift}/>
+)}
+
 
 <h2>🟢 SHIFT ACTIVE</h2>
 

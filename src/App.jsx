@@ -1,8 +1,10 @@
 import { useState } from "react";
-import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import AttendantDashboard from "./pages/AttendantDashboard";
 
 export default function App() {
+  return <div style={{padding:"30px",color:"black",background:"white"}}>PETROGUARD APP TEST</div>;
+
   const [staff, setStaff] = useState(null);
 
   if (!staff) {
@@ -10,8 +12,6 @@ export default function App() {
   }
 
   return (
-    <Dashboard
-      staff={staff}
-    />
+    <AttendantDashboard staff={staff} />
   );
 }

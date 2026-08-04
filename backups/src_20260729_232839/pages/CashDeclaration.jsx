@@ -44,7 +44,6 @@ export default function CashDeclaration({
 
   async function saveReceipt() {
     if (!stationId) {
-      alert("Select station");
       return;
     }
 
@@ -83,7 +82,6 @@ console.log({
     setLoading(false);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -136,7 +134,6 @@ console.log({
         }
       ]);
 
-    alert("Daily receipt saved and reconciliation created");
 
     setCash("");
     setPos("");

@@ -58,7 +58,6 @@ async function savePayment(status) {
         cleanNumber(form.other_income) -
         cleanNumber(form.other_expenses);
 
-      console.log("STAFF:", staff);
 
       const payload = {
         station_id: staff.station_id,

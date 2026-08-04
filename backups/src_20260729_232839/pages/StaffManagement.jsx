@@ -31,11 +31,9 @@ export default function StaffManagement() {
       .insert([form]);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Staff saved successfully");
 
     setForm({
       name: "",

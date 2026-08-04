@@ -31,7 +31,6 @@ export default function ManagerActivity() {
 
     if (error) {
       console.error("ManagerActivity Error:", error);
-      alert(error.message);
       return;
     }
 

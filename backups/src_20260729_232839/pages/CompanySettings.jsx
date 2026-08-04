@@ -42,11 +42,9 @@ export default function CompanySettings() {
       .eq("id", settings.id);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Company Settings saved successfully.");
   }
 
   useEffect(() => {

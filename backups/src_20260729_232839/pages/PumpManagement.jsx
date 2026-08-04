@@ -32,7 +32,6 @@ export default function PumpManagement() {
       .order("id");
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -46,7 +45,6 @@ export default function PumpManagement() {
       .order("name");
 
     if (error) {
-      alert(error.message);
       return;
     }
 
@@ -68,7 +66,6 @@ export default function PumpManagement() {
   ]);
 
     if (error) {
-      alert(error.message);
       return;
     }
 

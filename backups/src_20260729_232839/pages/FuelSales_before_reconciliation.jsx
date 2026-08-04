@@ -57,14 +57,12 @@ function FuelSales() {
   }
   async function saveSale() {
     if (!stationId || !pumpId || !openingMeter || !closingMeter || !unitPrice) {
-      alert("Please fill in all fields.");
       return;
     }
 
     const quantity = Number(closingMeter) - Number(openingMeter);
 
     if (quantity <= 0) {
-      alert("Closing meter must be greater than opening meter.");
       return;
     }
 
@@ -85,12 +83,10 @@ function FuelSales() {
       ]);
 
     if (error) {
-      alert(error.message);
       console.error(error);
       return;
     }
 
-    alert("Fuel sale saved successfully.");
 
     setStationId("");
     setPumpId("");

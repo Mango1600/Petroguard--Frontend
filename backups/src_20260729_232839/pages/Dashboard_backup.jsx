@@ -21,7 +21,6 @@ const [showDailyReconciliation, setShowDailyReconciliation] = useState(false);
       .order("id");
 
     if (error) {
-      alert(error.message);
       console.error(error);
       return;
     }

@@ -47,7 +47,6 @@ export default function Login({ onLogin, goToActivate }) {
       .single();
 
     if (staffError) {
- console.log("STAFF ERROR:", staffError);
  setMessage(JSON.stringify(staffError));
  return;
 }

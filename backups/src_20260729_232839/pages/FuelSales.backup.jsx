@@ -25,7 +25,6 @@ const [paymentMethod, setPaymentMethod] = useState("Cash");
       .order("sale_date", { ascending: false });
 
     if (salesError) {
-      alert(salesError.message);
       console.error(salesError);
       setLoading(false);
       return;
@@ -74,11 +73,9 @@ async function saveSale() {
     ]);
 
   if (error) {
-    alert(error.message);
     return;
   }
 
-  alert("Fuel sale saved successfully");
 
   loadData();
 }

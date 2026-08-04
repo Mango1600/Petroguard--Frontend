@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-function FuelSales() {
+function FuelSales({ salesContext }) {
   const [sales, setSales] = useState([]);
   const [stations, setStations] = useState([]);
   const [pumps, setPumps] = useState([]);
@@ -13,6 +13,8 @@ function FuelSales() {
   const [closingMeter, setClosingMeter] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [activeShift, setActiveShift] = useState(null);
+  const [activeAssignment, setActiveAssignment] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -57,14 +59,36 @@ function FuelSales() {
   }
   async function saveSale() {
     if (!stationId || !pumpId || !openingMeter || !closingMeter || !unitPrice) {
-      alert("Please fill in all fields.");
+      return;
+    }
+
+    const { data: shift } = await supabase
+      .from("pump_shifts")
+      .select("*")
+      .eq("pump_id", Number(pumpId))
+      .eq("status", "OPEN")
+      .single();
+
+    if (!shift) {
+      alert("No active Pump Shift found for this pump");
+      return;
+    }
+
+    const { data: assignment } = await supabase
+      .from("attendant_assignments")
+      .select("*")
+      .eq("pump_shift_id", shift.id)
+      .eq("status", "ACTIVE")
+      .single();
+
+    if (!assignment) {
+      alert("No active attendant assignment found");
       return;
     }
 
     const quantity = Number(closingMeter) - Number(openingMeter);
 
     if (quantity <= 0) {
-      alert("Closing meter must be greater than opening meter.");
       return;
     }
 
@@ -74,23 +98,24 @@ function FuelSales() {
       .from("fuel_sales")
       .insert([
         {
-          station_id: Number(stationId),
-          pump_id: Number(pumpId),
+          station_id: salesContext?.business_day_id ? stationId : Number(stationId),
+          pump_id: salesContext?.pump_id || Number(pumpId),
+          pump_shift_id: shift.id,
+          staff_id: assignment.staff_id,
           quantity: quantity,
           unit_price: Number(unitPrice),
           total_amount: totalAmount,
           payment_method: paymentMethod,
+
           sale_date: new Date().toISOString(),
         },
       ]);
 
     if (error) {
-      alert(error.message);
       console.error(error);
       return;
     }
 
-    alert("Fuel sale saved successfully.");
 
     setStationId("");
     setPumpId("");

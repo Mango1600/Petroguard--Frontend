@@ -65,12 +65,10 @@ function PumpReadings() {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       console.log(error);
       return;
     }
 
-    alert("Submitted successfully");
     loadData();
   }
 
@@ -84,11 +82,9 @@ function PumpReadings() {
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
-    alert("Verified successfully");
     loadData();
   }
 
@@ -105,16 +101,13 @@ function PumpReadings() {
     console.log("Approve result:", data, error);
 
     if (error) {
-      alert(error.message);
       return;
     }
 
     if (!data || data.length === 0) {
-      alert("No row was updated.");
       return;
     }
 
-    alert("Approved successfully");
     loadData();
   }
 

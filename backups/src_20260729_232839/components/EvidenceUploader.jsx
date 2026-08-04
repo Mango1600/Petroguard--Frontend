@@ -29,7 +29,6 @@ export default function EvidenceUploader({
         .upload(filePath, file);
 
       if (uploadError) {
-        alert("Storage error: " + uploadError.message);
         setUploading(false);
         return;
       }
@@ -51,19 +50,16 @@ export default function EvidenceUploader({
         ]);
 
       if (dbError) {
-        alert("Database error: " + dbError.message);
         setUploading(false);
         return;
       }
 
-      alert("Evidence uploaded successfully");
 
       if (onUploaded) {
         onUploaded();
       }
 
     } catch (err) {
-      alert(err.message);
     }
 
     setUploading(false);
@@ -77,7 +73,6 @@ export default function EvidenceUploader({
     </div>
   );
 }
-
 
 
 
