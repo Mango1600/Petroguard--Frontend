@@ -1,102 +1,45 @@
-import { useRef, useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { useRef, useState } from "react";
+import { uploadEvidence } from "../services/evidenceService";
 
 export default function CameraCapture({
   onCapture,
-  mode = "both",
-  title = "Enterprise Evidence Capture"
+  title = "Evidence Capture",
+  stationId = null,
+  uploadedBy = null,
+  recordId = null,
+  moduleName = "camera_capture"
 }) {
-
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
 
-  const [cameraOpen, setCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
-
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
-  const [recordedVideo, setRecordedVideo] = useState(null);
-
-  const [recording, setRecording] = useState(false);
-
-  const [gps, setGps] = useState(null);
-  const [deviceInfo, setDeviceInfo] = useState("");
-  const [networkInfo, setNetworkInfo] = useState("");
-  const [batteryLevel, setBatteryLevel] = useState("");
-  const [timestamp, setTimestamp] = useState("");
-  const [shaHash, setShaHash] = useState("");
-  const [aiVerified] = useState(false);
-
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
 
-
-  useEffect(() => {
-
-    setTimestamp(new Date().toISOString());
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setGps({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude
-          });
-        },
-        () => {}
-      );
-    }
-
-    setDeviceInfo(navigator.userAgent);
-
-    if (navigator.connection) {
-      setNetworkInfo(
-        navigator.connection.effectiveType || ""
-      );
-    }
-
-    if (navigator.getBattery) {
-      navigator.getBattery().then((battery) => {
-        setBatteryLevel(
-          Math.round(battery.level * 100)
-        );
+  async function openCamera() {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false
       });
-    }
 
-  }, []);
+      setStream(s);
+      setCameraOpen(true);
 
-
-useEffect(() => {
-    if (!cameraOpen) return;
-
-    async function startCamera() {
-      try {
-        const mediaStream =
-          await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "environment",
-            },
-            audio: false,
-          });
-
-        setStream(mediaStream);
-
+      setTimeout(() => {
         if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
+          videoRef.current.srcObject = s;
         }
-      } catch (err) {
-        console.error(err);
-        setError("Unable to access camera.");
-      }
+      }, 100);
+
+    } catch (e) {
+      console.error(e);
+      setError("Unable to access camera.");
     }
+  }
 
-    startCamera();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [cameraOpen]);  function capturePhoto() {
+  function capture() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
@@ -105,68 +48,54 @@ useEffect(() => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    const context = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
 
-    context.drawImage(video, 0, 0);
+    const img = canvas.toDataURL("image/jpeg", 0.9);
 
-    const image = canvas.toDataURL("image/jpeg", 0.9);
-
-    setCapturedPhoto(image);
+    setPhoto(img);
 
     if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(t => t.stop());
     }
 
     setCameraOpen(false);
   }
 
-
-  async function uploadEvidence() {
-
-    if (!capturedPhoto) return null;
-
-    const response = await fetch(capturedPhoto);
-    const blob = await response.blob();
-
-    const fileName =
-      `opening/${Date.now()}.jpg`;
-
-    const { data, error } =
-      await supabase.storage
-        .from("petroguard-evidence")
-        .upload(fileName, blob, {
-          contentType: "image/jpeg"
-        });
-
-    if (error) {
-      console.error(error);
-      setError("Evidence upload failed.");
-      return null;
-    }
-
-    return data.path;
+  function retake() {
+    setPhoto(null);
+    openCamera();
   }
 
   async function usePhoto() {
+    if (!photo || !onCapture) return;
 
-    const path = await uploadEvidence();
+    const result = await uploadEvidence({
+      imageData: photo,
+      fileName: `evidence-${Date.now()}.jpg`,
+      moduleName,
+      evidenceType: "PHOTO",
+      stationId,
+      uploadedBy,
+      recordId
+    });
 
-    if (onCapture && path) {
-      onCapture(path);
+    if (!result.success) {
+      alert("Evidence upload failed.");
+      return;
     }
+
+    onCapture(result.evidence.id);
   }
 
-  function retakePhoto() {
-    setCapturedPhoto(null);
-    setCameraOpen(true);
-  }  return (
-    <div>
-      <h3>📷 Evidence Capture</h3>
+  return (
+    <div style={{marginTop:20}}>
+      <h3>{title}</h3>
 
       {error && <p>{error}</p>}
 
-      {!cameraOpen && !capturedPhoto && (
-        <button onClick={() => setCameraOpen(true)}>
+      {!cameraOpen && !photo && (
+        <button onClick={openCamera}>
           📷 Capture Evidence
         </button>
       )}
@@ -177,56 +106,34 @@ useEffect(() => {
             ref={videoRef}
             autoPlay
             playsInline
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              borderRadius: "8px",
-            }}
+            style={{width:"100%",maxWidth:"400px"}}
           />
 
-          <br />
-          <br />
+          <br/><br/>
 
-          <button onClick={capturePhoto}>
+          <button onClick={capture}>
             📸 Capture Photo
-          </button>
-
-          <button
-            onClick={() => {
-              if (stream) {
-                stream.getTracks().forEach((track) => track.stop());
-              }
-              setCameraOpen(false);
-            }}
-            style={{ marginLeft: "10px" }}
-          >
-            ❌ Close
           </button>
         </>
       )}
 
-      {capturedPhoto && (
+      {photo && (
         <>
           <img
-            src={capturedPhoto}
+            src={photo}
             alt="Evidence"
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              borderRadius: "8px",
-            }}
+            style={{width:"100%",maxWidth:"400px"}}
           />
 
-          <br />
-          <br />
+          <br/><br/>
 
-          <button onClick={retakePhoto}>
+          <button onClick={retake}>
             🔄 Retake
           </button>
 
           <button
             onClick={usePhoto}
-            style={{ marginLeft: "10px" }}
+            style={{marginLeft:10}}
           >
             ✅ Use Photo
           </button>
@@ -235,7 +142,7 @@ useEffect(() => {
 
       <canvas
         ref={canvasRef}
-        style={{ display: "none" }}
+        style={{display:"none"}}
       />
     </div>
   );

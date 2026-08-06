@@ -1,48 +1,23 @@
 from pathlib import Path
+import re
 
-root = Path(".")
+p = Path("src/pages/Login.jsx")
+text = p.read_text()
 
-extensions = {".js", ".jsx", ".ts", ".tsx"}
+pattern = r'''
+\s*if \(staff\.status !== "active"\) \{
+\s*setMessage\("Account is not active"\);
+\s*return;
+\s*\}
 
-removed = 0
+\s*onLogin\(staff\);
+\s*setMessage\("AFTER ONLOGIN"\);
+'''
 
-for file in root.rglob("*"):
-    if file.suffix not in extensions:
-        continue
+new_text, count = re.subn(pattern, "", text, count=1)
 
-    try:
-        text = file.read_text(encoding="utf-8")
-    except Exception:
-        continue
-
-    original = text
-
-    lines = []
-    for line in text.splitlines():
-        s = line.strip()
-
-        if s.startswith("alert("):
-            removed += 1
-            continue
-
-        if "LOGIN SUCCESS" in line:
-            removed += 1
-            continue
-
-        if "console.log(" in line and (
-            "LOGIN" in line.upper()
-            or "staff" in line.lower()
-            or "json.stringify" in line.lower()
-        ):
-            removed += 1
-            continue
-
-        lines.append(line)
-
-    text = "\n".join(lines)
-
-    if text != original:
-        file.write_text(text, encoding="utf-8")
-        print("Cleaned:", file)
-
-print(f"\nRemoved {removed} debug statements.")
+if count:
+    p.write_text(new_text)
+    print("✅ Removed duplicate login code")
+else:
+    print("❌ Duplicate block not found")

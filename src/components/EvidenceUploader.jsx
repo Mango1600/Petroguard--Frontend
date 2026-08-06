@@ -9,54 +9,26 @@ export default function EvidenceUploader({
 }) {
   const [uploading, setUploading] = useState(false);
 
-  async function handleCapture(imageBase64) {
+  async function handleCapture(evidenceId) {
     setUploading(true);
 
     try {
-      const response = await fetch(imageBase64);
-      const blob = await response.blob();
-
-      const file = new File(
-        [blob],
-        `evidence-${Date.now()}.jpg`,
-        { type: "image/jpeg" }
-      );
-
-      const filePath = `${reconciliationId}/${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("petroguard-evidence")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        setUploading(false);
-        return;
-      }
-
       const { error: dbError } = await supabase
         .from("evidence")
-        .insert([
-          {
-            reconciliation_id: reconciliationId,
-            station_id: stationId,
-            evidence_type: "photo",
-            file_name: file.name,
-            file_path: filePath,
-            mime_type: file.type,
-            file_size: file.size,
-            capture_time: new Date().toISOString(),
-            status: "Pending",
-          },
-        ]);
+        .update({
+          reconciliation_id: reconciliationId,
+          station_id: stationId,
+          status: "Pending"
+        })
+        .eq("id", evidenceId);
 
       if (dbError) {
         setUploading(false);
         return;
       }
 
-
       if (onUploaded) {
-        onUploaded();
+        onUploaded(evidenceId);
       }
 
     } catch (err) {

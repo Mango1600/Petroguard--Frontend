@@ -1,5 +1,5 @@
 import { useState } from "react";
-import CameraCapture from "../components/CameraCapture";
+import VideoCapture from "../components/VideoCapture";
 import CashDeclaration from "./CashDeclaration";
 
 export default function ClosingVideoEvidence({
@@ -34,9 +34,10 @@ export default function ClosingVideoEvidence({
       <p><b>Closing:</b> {closingMeter}</p>
       <p><b>Litres Sold:</b> {litresSold}</p>
 
-      <CameraCapture
-        onCapture={(evidence)=>{
-          setVideo(evidence);
+      <VideoCapture
+        evidenceType="closing_shift_video"
+        onComplete={(evidenceId)=>{
+          setVideo(evidenceId);
         }}
       />
 

@@ -145,8 +145,8 @@ function PumpReadings() {
           opening_meter: Number(openingMeter),
           closing_meter: Number(closingMeter),
 
-          opening_meter_photo: openingEvidence,
-          closing_meter_photo: closingEvidence,
+          opening_meter_photo: null,
+          closing_meter_photo: null,
 
           status: "draft"
         }
@@ -276,8 +276,8 @@ function PumpReadings() {
           <br />
 
           <CameraCapture
-            onCapture={(file)=>{
-              setOpeningEvidence(file);
+            onCapture={(evidenceId)=>{
+              setOpeningEvidence(evidenceId);
             }}
           />
 
@@ -293,8 +293,8 @@ function PumpReadings() {
           <br />
 
           <CameraCapture
-            onCapture={(file)=>{
-              setClosingEvidence(file);
+            onCapture={(evidenceId)=>{
+              setClosingEvidence(evidenceId);
             }}
           />
 

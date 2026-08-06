@@ -1,124 +1,61 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { useState } from "react";
 import VideoCapture from "../components/VideoCapture";
+import CameraCapture from "../components/CameraCapture";
 
-export default function ShiftClose({ staff }) {
-  const [shift, setShift] = useState(null);
-  const [pump, setPump] = useState(null);
-  const [closingMeter, setClosingMeter] = useState("");
-  const [message, setMessage] = useState("");
-  const [showVideo, setShowVideo] = useState(false);
-
-  useEffect(() => {
-    loadShift();
-  }, []);
-
-  async function loadShift() {
-    const { data } = await supabase
-      .from("staff_shifts")
-      .select("*")
-      .eq("staff_id", staff.id)
-      .eq("status", "open")
-      .order("id", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    setShift(data);
-
-    if (data?.pump_id) {
-      const { data: pumpData } = await supabase
-        .from("pumps")
-        .select("id,pump_name,product_type")
-        .eq("id", data.pump_id)
-        .single();
-
-      setPump(pumpData);
-    }
-  }
-
-  async function closeShift() {
-    if (!closingMeter) {
-      setMessage("Enter closing meter");
-      return;
-    }
-
-    const litres =
-      Number(closingMeter) - Number(shift.opening_meter);
-
-    const { error } = await supabase
-      .from("pump_readings")
-      .insert([{
-        pump_id: pump.id,
-        staff_id: staff.id,
-        station_id: staff.station_id,
-        opening_meter: Number(shift.opening_meter),
-        closing_meter: Number(closingMeter),
-        expected_sales: litres,
-        reading_date: new Date().toISOString()
-      }]);
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    await supabase
-      .from("shift_attendants")
-      .insert([{
-        shift_id: shift.id,
-        staff_id: staff.id,
-        station_id: staff.station_id,
-        activity_type: "CLOSED_SHIFT"
-      }]);
-
-    setMessage(`✅ Closing saved. PetroGuard calculated ${litres} litres`);
-    setShowVideo(true);
-  }
-
-  if (showVideo) {
-    return (
-      <VideoCapture
-        shiftId={shift.id}
-        stationId={staff.station_id}
-        staffId={staff.id}
-        evidenceType="closing_shift_video"
-        onComplete={async () => {
-          setShowVideo(false);
-        }}
-      />
-    );
-  }
-
-  if (!shift) {
-    return <div style={{padding:20}}>No active shift found</div>;
-  }
+export default function ShiftClose({ onComplete, loggedInStaff, assignment, shift }) {
+  const [videoDone, setVideoDone] = useState(false);
+  const [photoDone, setPhotoDone] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [meter, setMeter] = useState("");
 
   return (
-    <div style={{padding:20,maxWidth:500,margin:"auto"}}>
-      <h2>🔴 SHIFT CLOSE</h2>
+    <div style={{padding:20}}>
+      <h2>Shift Close</h2>
 
-      <p><b>Attendant:</b> {staff.name}</p>
-      <p><b>Pump:</b> {pump?.pump_name}</p>
-      <p><b>Opening Meter:</b> {shift.opening_meter}</p>
+      {!videoDone && (
+        <>
+          <h3>1. Closing Video Evidence</h3>
+          <VideoCapture
+            onComplete={() => setVideoDone(true)}
+          />
+        </>
+      )}
 
-      <input
-        type="number"
-        placeholder="Closing Meter"
-        value={closingMeter}
-        onChange={(e)=>setClosingMeter(e.target.value)}
-        style={{width:"100%",padding:10}}
-      />
+      {videoDone && !photoDone && (
+        <>
+          <h3>2. Closing Photo Evidence</h3>
+          <CameraCapture
+            title="Closing Evidence"
+            stationId={shift?.station_id || null}
+            uploadedBy={loggedInStaff?.id || null}
+            recordId={assignment?.pump_shift_id || null}
+            moduleName="SHIFT_CLOSE"
+            onCapture={(evidenceId) => { setPhoto(evidenceId); setPhotoDone(true); }}
+          />
+        </>
+      )}
 
-      <br/><br/>
+      {photoDone && (
+        <>
+          <h3>3. Closing Meter</h3>
 
-      <button
-        onClick={closeShift}
-        style={{width:"100%",padding:15}}
-      >
-        💾 SAVE CLOSING METER
-      </button>
+          <input
+            type="number"
+            placeholder="Closing Meter"
+            value={meter}
+            onChange={(e)=>setMeter(e.target.value)}
+          />
 
-      <p>{message}</p>
+          <br/><br/>
+
+          <button
+            disabled={!meter}
+            onClick={() => onComplete({ meter, photo })}
+          >
+            Finish Shift
+          </button>
+        </>
+      )}
     </div>
   );
 }

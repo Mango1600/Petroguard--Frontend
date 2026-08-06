@@ -5,14 +5,16 @@ import CameraCapture from "../components/CameraCapture";
 
 async function getOpenBusinessDay(stationId){
 
-  const { data, error } = await supabase
+  console.log("DEBUG: About to insert assignment");
+const { data, error } = await supabase
     .from("business_days")
     .select("*")
     .eq("station_id", stationId)
     .eq("status","OPEN")
     .maybeSingle();
 
-  if(error){
+  console.log("DEBUG: Insert finished", {data, error});
+if(error){
     throw error;
   }
 
@@ -72,8 +74,9 @@ export default function ResumeAssignment({
 const [message,setMessage] = useState("");
 const [previousMeter,setPreviousMeter] = useState("");
 const [openingMeter,setOpeningMeter] = useState("");
-const [evidence,setEvidence] = useState("");
+const [evidence,setEvidence] = useState("TEST_EVIDENCE");
 const [attendants,setAttendants] = useState([]);
+const [pumpShiftId, setPumpShiftId] = useState(null);
 
 
 async function loadOpenBusinessDay(){
@@ -161,6 +164,8 @@ function validateResumeOpeningEvidence(evidence){
 
 
 async function createResumeAssignment(
+/* DEBUG */
+
   pumpShiftId,
   staffId,
   openingMeter,
@@ -228,6 +233,7 @@ return;
 }
 
 const pumpShift = await getOpenPumpShift(businessDay.id);
+setPumpShiftId(pumpShift?.id);
 
 if(!pumpShift){
 setMessage("No OPEN Pump Shift found.");
@@ -238,7 +244,20 @@ const previous = await getPreviousAssignment(pumpShift.id);
 
 if(previous){
 setPreviousMeter(previous.closing_meter);
-setOpeningMeter(previous.closing_meter);
+
+const { data: activeAssignment } = await supabase
+.from("attendant_assignments")
+.select("opening_meter")
+.eq("pump_shift_id", pumpShift.id)
+.eq("status", "ACTIVE")
+.maybeSingle();
+
+if(activeAssignment?.opening_meter){
+  setOpeningMeter(activeAssignment.opening_meter);
+  setPreviousMeter(activeAssignment.opening_meter);
+}else{
+  setOpeningMeter(previous.closing_meter);
+}
 }
 
 
@@ -266,9 +285,9 @@ const selected = loggedInStaff.id;
 
 try{
 
-validateOpeningEvidence(evidence);
+validateResumeOpeningEvidence(evidence);
 
-validateOpeningMeter(
+validateResumeMeter(
 previousMeter,
 openingMeter
 );
@@ -289,7 +308,7 @@ const {data:last}=await supabase
 .single();
 
 
-await supabase
+const { error } = await supabase
 .from("attendant_assignments")
 .insert({
 pump_shift_id:pumpShiftId,
@@ -300,16 +319,20 @@ opening_meter:openingMeter,
 opening_evidence:evidence
 });
 
+if(error){
+  return setMessage(error.message);
+}
 
 setMessage("Pump Shift resumed successfully.");
 
 setEvidence("");
 setOpeningMeter("");
-setTimeout(() => {
-  if(onResumeSuccess){
-    onResumeSuccess();
-  }
-}, 1000);
+
+await load();
+
+if(onResumeSuccess){
+  await onResumeSuccess();
+}
 
 }
 
@@ -333,7 +356,7 @@ placeholder="Opening Meter"
 <CameraCapture
   title="Opening Evidence"
   mode="photo"
-  onCapture={(photo) => setEvidence(photo)}
+  onCapture={(evidenceId) => setEvidence(evidenceId)}
 />
 
 <br/><br/>

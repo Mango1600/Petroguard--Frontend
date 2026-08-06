@@ -12,20 +12,27 @@ export default function ManagerActivity() {
     const { data, error } = await supabase
       .from("pump_readings")
       .select(`
-  id,
-  staff_id,
-  opening_meter,
-  closing_meter,
-  variance,
-  status,
-  reading_date
-`)
+        id,
+        opening_meter,
+        closing_meter,
+        variance,
+        status,
+        reading_date,
+        staff (
+          name,
+          role
+        ),
+        pumps (
+          pump_name,
+          product_type
+        )
+      `)
       .order("reading_date", { ascending: false });
 
     if (error) {
-  console.error("ManagerActivity Error:", error);
-  return;
-}
+      console.error("ManagerActivity Error:", error);
+      return;
+    }
 
     setActivities(data || []);
   }
@@ -41,6 +48,7 @@ export default function ManagerActivity() {
           <thead>
             <tr>
               <th>Attendant</th>
+              <th>Pump</th>
               <th>Opening</th>
               <th>Closing</th>
               <th>Variance</th>
@@ -51,10 +59,22 @@ export default function ManagerActivity() {
           <tbody>
             {activities.map((item) => (
               <tr key={item.id}>
-                <td>Staff #{item.staff_id}</td>
+                <td>
+                  {item.staff?.name || "Unknown"}
+                </td>
+
+                <td>
+                  {item.pumps
+                    ? `${item.pumps.pump_name} (${item.pumps.product_type})`
+                    : "-"}
+                </td>
+
                 <td>{item.opening_meter}</td>
+
                 <td>{item.closing_meter}</td>
+
                 <td>{item.variance}</td>
+
                 <td>{item.status}</td>
               </tr>
             ))}

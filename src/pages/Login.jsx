@@ -34,14 +34,35 @@ export default function Login({ onLogin, goToActivate }) {
       password,
     });
 
+    console.log("AUTH ERROR:", error);
+    console.log("AUTH DATA:", data);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    if (!data?.user) {
+      setMessage("No authenticated user returned.");
+      return;
+    }
+
     const user = data.user;
 
-    setMessage("Auth OK - Loading staff...");
+    setMessage("MARKER 2026 - BEFORE STAFF QUERY");
     
-    const { data: staffRows, error: staffError } = await supabase
+    const staffPromise = supabase
       .from("staff")
       .select("*")
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .limit(1);
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("STAFF QUERY TIMEOUT")), 10000)
+    );
+
+    const { data: staffRows, error: staffError } =
+      await Promise.race([staffPromise, timeoutPromise]);
 
     console.log("STAFF RESULT", staffRows, staffError);
 
@@ -49,8 +70,6 @@ export default function Login({ onLogin, goToActivate }) {
       setMessage("STAFF ERROR: " + staffError.message);
       return;
     }
-
-    setMessage("STAFF ROWS: " + String(staffRows ? staffRows.length : 0));
 
     if (!staffRows || staffRows.length === 0) {
       setMessage("No staff record linked to this account.");
@@ -64,10 +83,8 @@ export default function Login({ onLogin, goToActivate }) {
       return;
     }
 
-    
-onLogin(staff);
-    setMessage("AFTER ONLOGIN");
-
+    onLogin(staff);
+    return;
   }
 
   return (

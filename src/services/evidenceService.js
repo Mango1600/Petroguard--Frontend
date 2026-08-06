@@ -20,6 +20,7 @@ function dataURLtoBlob(dataURL) {
 
 export async function uploadEvidence({
   imageData,
+  videoBlob,
   fileName,
   stationId,
   recordId,
@@ -34,7 +35,9 @@ export async function uploadEvidence({
 
   try {
 
-    const blob = dataURLtoBlob(imageData);
+    const blob = videoBlob
+      ? videoBlob
+      : dataURLtoBlob(imageData);
 
     const filePath =
       `${moduleName}/${Date.now()}-${fileName}`;
@@ -44,13 +47,26 @@ export async function uploadEvidence({
       await supabase.storage
         .from(APP_CONFIG.STORAGE.EVIDENCE_BUCKET)
         .upload(filePath, blob, {
-          contentType: "image/jpeg",
+          contentType: videoBlob
+            ? "video/webm"
+            : "image/jpeg",
           upsert: false,
         });
 
 
     if (storageError) throw storageError;
 
+
+    alert(JSON.stringify({companyId, stationId, uploadedBy, recordId, moduleName, evidenceType}));
+
+    console.log("EVIDENCE INSERT DATA", {
+      companyId,
+      stationId,
+      uploadedBy,
+      recordId,
+      moduleName,
+      evidenceType
+    });
 
     const { data: evidence, error: evidenceError } =
       await supabase
@@ -62,7 +78,9 @@ export async function uploadEvidence({
           evidence_type: evidenceType,
           file_name: fileName,
           file_path: filePath,
-          mime_type: "image/jpeg",
+          mime_type: videoBlob
+            ? "video/webm"
+            : "image/jpeg",
           capture_time: new Date(),
           latitude,
           longitude,
@@ -107,7 +125,8 @@ export async function uploadEvidence({
 
   } catch (error) {
 
-    console.error("Evidence Upload Error:", error);
+    console.error("Evidence Upload Error FULL:", JSON.stringify(error, null, 2));
+    alert("Evidence Error: " + JSON.stringify(error, null, 2));
 
     return {
       success: false,
@@ -117,7 +136,6 @@ export async function uploadEvidence({
   }
 }
 
-
 export async function uploadVideoEvidence({
   videoBlob,
   fileName,
@@ -125,29 +143,18 @@ export async function uploadVideoEvidence({
   recordId,
   moduleName,
   uploadedBy = null,
-  description = null,
+  description = null
 }) {
-  try {
-    const filePath = `${moduleName}/${Date.now()}-${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(APP_CONFIG.STORAGE.EVIDENCE_BUCKET)
-      .upload(filePath, videoBlob, {
-        contentType: "video/webm",
-        upsert: false,
-      });
+  return await uploadEvidence({
+    videoBlob,
+    fileName,
+    stationId,
+    recordId,
+    moduleName,
+    evidenceType: "VIDEO",
+    uploadedBy,
+    description
+  });
 
-    if (error) throw error;
-
-    return {
-      success: true,
-      filePath,
-    };
-  } catch (error) {
-    console.error("Video Upload Error:", error);
-    return {
-      success: false,
-      error,
-    };
-  }
 }

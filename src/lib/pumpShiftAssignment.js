@@ -192,10 +192,12 @@ export async function handoverAssignment({
     throw currentError;
 
 
-  validateMeterContinuity(
-    currentClosingMeter,
-    currentClosingMeter
-  );
+  if (
+    currentClosingMeter === null ||
+    currentClosingMeter === undefined
+  ) {
+    throw new Error("Closing meter required for handover");
+  }
 
 
   const now = new Date().toISOString();

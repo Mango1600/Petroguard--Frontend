@@ -12,21 +12,8 @@ export default function ManagerDashboard() {
   async function loadAttendants() {
     const { data, error } = await supabase
       .from("staff")
-      .select(`
-        id,
-        name,
-        role,
-        email,
-        status,
-        staff_pumps (
-          pump_id,
-          pumps (
-            pump_name,
-            product_type
-          )
-        )
-      `)
-      .eq("role", "Attendant")
+      .select("id,name,role,email,status")
+      .eq("role","Attendant")
       .order("id");
 
     if (error) {

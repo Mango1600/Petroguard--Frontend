@@ -20,7 +20,7 @@ return (
 
 <p>Shift No: {shift?.id}</p>
 <p>Pump: Pump 1 (PMS)</p>
-<p>Opening Meter: {shift?.opening_meter || 1000}</p>
+<p>Opening Meter: {shift?.opening_meter ?? "Not Available"}</p>
 
 <hr/>
 

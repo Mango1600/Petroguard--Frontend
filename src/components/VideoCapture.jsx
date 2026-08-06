@@ -1,13 +1,13 @@
-import { supabase } from "../lib/supabase";
+
 import { useRef, useState, useEffect } from "react";
 import { uploadVideoEvidence } from "../services/evidenceService";
 
 export default function VideoCapture({
   onComplete,
-  shiftId,
   stationId,
   staffId,
-  evidenceType
+  shiftId,
+  evidenceType = "SHIFT_VIDEO"
 }) {
   const videoRef = useRef(null);
   const recorderRef = useRef(null);
@@ -15,7 +15,8 @@ export default function VideoCapture({
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [videoUrl, setVideoUrl] = useState("");
-const [uploading, setUploading] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
   useEffect(() => {
     startCamera();
 
@@ -46,7 +47,7 @@ const [uploading, setUploading] = useState(false);
         }
       };
 
-      recorder.onstop = async () => {
+      recorder.onstop = () => {
         const blob = new Blob(chunks, {
           type: "video/webm"
         });
@@ -54,23 +55,25 @@ const [uploading, setUploading] = useState(false);
         const url = URL.createObjectURL(blob);
         setVideoUrl(url);
 
-        console.log("🎥 Video captured:", blob.size, blob.type);
-
-        await uploadVideoEvidence({
+        uploadVideoEvidence({
           videoBlob: blob,
-          fileName: `shift-video-${Date.now()}.webm`,
+          fileName: "shift_evidence.webm",
           stationId,
-          recordId: shiftId,
-          moduleName: "shift",
+          recordId: shiftId || "PENDING",
+          moduleName: evidenceType,
           uploadedBy: staffId,
-          description: evidenceType || "Opening shift video evidence"
+          description: "Opening shift video evidence"
+        }).then((result)=>{
+          console.log("VIDEO UPLOAD:", result);
+
+          stopCamera();
+          setSeconds(0);
+          setCompleted(true);
+
+          if (onComplete) {
+            onComplete(result);
+          }
         });
-
-        console.log("✅ Video evidence saved");
-
-        if (onComplete) {
-          onComplete(blob);
-        }
       };
 
     } catch (error) {
@@ -108,6 +111,7 @@ const [uploading, setUploading] = useState(false);
     }
 
     setRecording(false);
+    setSeconds(0);
   }
 
 
@@ -125,15 +129,21 @@ const [uploading, setUploading] = useState(false);
 
       <h3>🎥 PetroGuard Video Evidence</h3>
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        style={{
-          width:"100%",
-          borderRadius:10
-        }}
-      />
+      {!completed && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          style={{
+            width:"100%",
+            borderRadius:10
+          }}
+        />
+      )}
+
+      {completed && (
+        <p>✅ Video Evidence Completed</p>
+      )}
 
       <p>
         Recording Time: {Math.floor(seconds/60)}:
@@ -141,7 +151,7 @@ const [uploading, setUploading] = useState(false);
       </p>
 
 
-      {!recording && !videoUrl && (
+      {!completed && !recording && !videoUrl && (
         <button
           onClick={startRecording}
           style={{width:"100%",padding:15}}
@@ -151,7 +161,7 @@ const [uploading, setUploading] = useState(false);
       )}
 
 
-      {recording && (
+      {!completed && recording && (
         <button
           onClick={stopRecording}
           style={{width:"100%",padding:15}}

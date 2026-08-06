@@ -19,7 +19,7 @@ export default function AttendantDashboard({ staff }) {
   }, []);
 
   async function loadPumpShift() {
-    console.log("Dashboard staff:", staff);
+    console.log("Dashboard staff FULL:", JSON.stringify(staff, null, 2));
 
     if (!staff?.id) return;
 
@@ -34,6 +34,7 @@ export default function AttendantDashboard({ staff }) {
         handed_over_at,
         pump_shifts (
           id,
+          station_id,
           shift_no,
           status,
           opening_meter,
@@ -53,6 +54,10 @@ export default function AttendantDashboard({ staff }) {
       .eq("status", "ACTIVE")
       .maybeSingle();
 
+    console.log("Dashboard staff FULL:", JSON.stringify(staff, null, 2));
+    console.log("Active assignment query result:", data);
+    console.log("Active assignment query error:", error);
+
     if (error) {
       console.log(error);
     }
@@ -67,8 +72,8 @@ export default function AttendantDashboard({ staff }) {
   if (!assignment) {
     return (
       <ResumeAssignment
-        staff={staff}
-        pumpShiftId={2}
+        loggedInStaff={staff}
+        
         onResumeSuccess={loadPumpShift}
       />
     );
@@ -127,7 +132,7 @@ export default function AttendantDashboard({ staff }) {
 if (page === "cash-declaration") {
   return (
     <CashDeclaration
-      staff={staff}
+      loggedInStaff={staff}
       onComplete={() => {
         setPage("dashboard");
         loadPumpShift();
@@ -139,7 +144,9 @@ if (page === "cash-declaration") {
 if (page === "shift-close") {
   return (
     <ShiftClose
-      staff={staff}
+      loggedInStaff={staff}
+      assignment={assignment}
+      shift={shift}
       onComplete={() => {
         setPage("dashboard");
         loadPumpShift();
@@ -176,9 +183,13 @@ return (
       <p>Assignment No: {assignment.assignment_no}</p>
 
       <CameraCapture
-        label="Closing Evidence"
-        onCapture={(fileUrl) => {
-          setClosingEvidence(fileUrl);
+        title="Closing Evidence"
+        stationId={staff?.station_id}
+        uploadedBy={staff?.id}
+        recordId={assignment?.pump_shift_id}
+        moduleName="pump_shift"
+        onCapture={(evidenceId) => {
+          setClosingEvidence(evidenceId);
           setEvidenceVerified(true);
         }}
       />
@@ -190,11 +201,7 @@ value={closingMeter}
 onChange={(e)=>setClosingMeter(e.target.value)}
 />
 
-<input
-placeholder="Closing Evidence"
-value={closingEvidence}
-onChange={(e)=>setClosingEvidence(e.target.value)}
-/>
+
 
 <button onClick={handleHandover}>
 Handover Pump

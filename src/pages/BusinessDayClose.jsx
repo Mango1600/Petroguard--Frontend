@@ -28,7 +28,7 @@ export default function BusinessDayClose({ businessDayId, userId }) {
                     userId,
 
                 closing_evidence:
-                    evidence,
+                    null,
 
                 status:
                     "CLOSED"

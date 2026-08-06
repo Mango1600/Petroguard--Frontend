@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
-import { uploadEvidence } from "../services/evidenceService";
 export default function TankDipEntry({ staff }) {
   const [tanks, setTanks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -134,15 +133,13 @@ if (
       return;
     }
 if (evidenceImage) {
-  await uploadEvidence({
-    imageData: evidenceImage,
-    fileName: "tank-dip-photo.jpg",
-    stationId: staff.station_id,
-    recordId: reading.id,
-    moduleName: "tank_readings",
-    evidenceType: "TANK_DIP_PHOTO",
-    uploadedBy: staff.id,
-  });
+  await supabase
+    .from("evidence_links")
+    .update({
+      module_name: "tank_readings",
+      record_id: String(reading.id),
+    })
+    .eq("evidence_id", evidenceImage);
 }
 await supabase
   .from("tanks")
@@ -203,7 +200,7 @@ await supabase
           <br />
 
           <CameraCapture
-            onCapture={(image) => setEvidenceImage(image)}
+            onCapture={(evidenceId) => setEvidenceImage(evidenceId)}
           />
 
           <br />

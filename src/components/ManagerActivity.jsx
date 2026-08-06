@@ -9,32 +9,45 @@ export default function ManagerActivity() {
   }, []);
 
   async function loadActivities() {
+
     const { data, error } = await supabase
-      .from("pump_readings")
+      .from("pump_shifts")
       .select(`
         id,
         opening_meter,
         closing_meter,
-        variance,
         status,
-        reading_date,
-        staff (
-          name,
-          role
-        ),
+        pump_id,
+        opened_by_staff_id,
         pumps (
           pump_name,
           product_type
         )
       `)
-      .order("reading_date", { ascending: false });
+      .order("id", { ascending: false });
 
     if (error) {
       console.error("ManagerActivity Error:", error);
       return;
     }
 
-    setActivities(data || []);
+    const rows = await Promise.all(
+      (data || []).map(async (shift) => {
+
+        const { data: staff } = await supabase
+          .from("staff")
+          .select("name,role")
+          .eq("id", shift.opened_by_staff_id)
+          .single();
+
+        return {
+          ...shift,
+          staff
+        };
+      })
+    );
+
+    setActivities(rows);
   }
 
   return (
