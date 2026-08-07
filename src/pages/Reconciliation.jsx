@@ -13,7 +13,7 @@ export default function Reconciliation({ pumpShiftId }) {
         const { data, error } =
             await supabase
             .rpc(
-                "calculate_reconciliation",
+                "run_shift_reconciliation",
                 {
                     p_pump_shift_id:
                     pumpShiftId
