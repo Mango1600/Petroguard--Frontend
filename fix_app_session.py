@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
-import { supabase } from "./lib/supabase";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+from pathlib import Path
 
-export default function App() {
-  const [staff, setStaff] = useState(null);
+file = Path("src/App.jsx")
+
+text = file.read_text()
+
+text = text.replace(
+'import { useState } from "react";',
+'import { useState, useEffect } from "react";\nimport { supabase } from "./lib/supabase";'
+)
+
+text = text.replace(
+'  const [staff, setStaff] = useState(null);',
+'''  const [staff, setStaff] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     async function checkSession() {
       const { data } = await supabase.auth.getSession();
-
-      console.log("APP SESSION:", data.session);
-
-      console.log("APP SESSION:", data.session);
 
       if (!data.session) {
         setCheckingSession(false);
@@ -36,19 +39,18 @@ export default function App() {
     }
 
     checkSession();
-  }, []);
+  }, []);'''
+)
 
-  if (checkingSession) {
+text = text.replace(
+'  if (!staff) {',
+'''  if (checkingSession) {
     return <div style={{padding:20}}>Loading...</div>;
   }
 
-  if (!staff) {
-    return <Login onLogin={setStaff} />;
-  }
+  if (!staff) {'''
+)
 
-  return (
-    <Dashboard
-      staff={staff}
-    />
-  );
-}
+file.write_text(text)
+
+print("✅ App.jsx session handling added")

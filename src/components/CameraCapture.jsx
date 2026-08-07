@@ -17,6 +17,8 @@ export default function CameraCapture({
   const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
 
+
+
   async function openCamera() {
     try {
       const s = await navigator.mediaDevices.getUserMedia({
@@ -79,6 +81,8 @@ export default function CameraCapture({
       uploadedBy,
       recordId
     });
+
+    
 
     if (!result.success) {
       alert("Evidence upload failed.");

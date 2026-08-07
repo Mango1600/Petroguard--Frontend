@@ -10,6 +10,7 @@ export default function ShiftClose({ onComplete, loggedInStaff, assignment, shif
 
   return (
     <div style={{padding:20}}>
+
       <h2>Shift Close</h2>
 
       {!videoDone && (
@@ -26,8 +27,8 @@ export default function ShiftClose({ onComplete, loggedInStaff, assignment, shif
           <h3>2. Closing Photo Evidence</h3>
           <CameraCapture
             title="Closing Evidence"
-            stationId={shift?.station_id || null}
-            uploadedBy={loggedInStaff?.id || null}
+            stationId={shift?.pumps?.station_id || null}
+            uploadedBy={loggedInStaff?.user_id || null}
             recordId={assignment?.pump_shift_id || null}
             moduleName="SHIFT_CLOSE"
             onCapture={(evidenceId) => { setPhoto(evidenceId); setPhotoDone(true); }}

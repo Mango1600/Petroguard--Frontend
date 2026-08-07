@@ -19,6 +19,9 @@ export default function AttendantDashboard({ staff }) {
   }, []);
 
   async function loadPumpShift() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    console.log("SUPABASE SESSION:", sessionData);
+
     console.log("Dashboard staff FULL:", JSON.stringify(staff, null, 2));
 
     if (!staff?.id) return;
@@ -26,27 +29,16 @@ export default function AttendantDashboard({ staff }) {
     const { data, error } = await supabase
       .from("attendant_assignments")
       .select(`
-        id,
-        assignment_no,
-        status,
-        pump_shift_id,
-        assigned_at,
-        handed_over_at,
+        *,
         pump_shifts (
-          id,
-          station_id,
-          shift_no,
-          status,
-          opening_meter,
-          closing_meter,
+          *,
           pumps (
-            id,
+            station_id,
             pump_name,
             product_type
           ),
           business_days (
-            business_date,
-            status
+            business_date
           )
         )
       `)
@@ -80,6 +72,9 @@ export default function AttendantDashboard({ staff }) {
   }
 
   const shift = assignment.pump_shifts;
+
+
+
 
 
 
@@ -185,7 +180,7 @@ return (
       <CameraCapture
         title="Closing Evidence"
         stationId={staff?.station_id}
-        uploadedBy={staff?.id}
+        uploadedBy={staff?.user_id}
         recordId={assignment?.pump_shift_id}
         moduleName="pump_shift"
         onCapture={(evidenceId) => {
