@@ -22,11 +22,16 @@ export default function App() {
 
       const user = data.session.user;
 
-      const { data: staffRows } = await supabase
+      const { data: staffRows, error: staffError } = await supabase
         .from("staff")
         .select("*")
         .eq("user_id", user.id)
         .limit(1);
+
+      
+
+      console.log("APP STAFF RESULT:", staffRows);
+      console.log("APP STAFF ERROR:", staffError);
 
       if (staffRows && staffRows.length > 0) {
         setStaff(staffRows[0]);
