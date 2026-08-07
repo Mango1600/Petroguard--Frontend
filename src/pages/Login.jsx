@@ -34,8 +34,8 @@ export default function Login({ onLogin, goToActivate }) {
       password,
     });
 
-    console.log("AUTH ERROR:", error);
-    console.log("AUTH DATA:", data);
+    
+    
 
     if (error) {
       setMessage(error.message);
@@ -49,12 +49,8 @@ export default function Login({ onLogin, goToActivate }) {
 
     const user = data.user;
 
-    alert(JSON.stringify({
-      auth_user: data.user,
-      auth_session: data.session
-    }, null, 2));
 
-    setMessage("MARKER 2026 - BEFORE STAFF QUERY");
+    
     
     const staffPromise = supabase
       .from("staff")
@@ -69,7 +65,7 @@ export default function Login({ onLogin, goToActivate }) {
     const { data: staffRows, error: staffError } =
       await Promise.race([staffPromise, timeoutPromise]);
 
-    console.log("STAFF RESULT", staffRows, staffError);
+    
 
     if (staffError) {
       setMessage("STAFF ERROR: " + staffError.message);
@@ -88,11 +84,11 @@ export default function Login({ onLogin, goToActivate }) {
       return;
     }
 
-    alert("MARKER 2026 - STAFF FOUND\\n" + JSON.stringify(staff, null, 2));
+    
 
     onLogin(staff);
 
-    alert("MARKER 2026 - AFTER onLogin");
+    
 
     return;
   }
