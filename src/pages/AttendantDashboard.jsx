@@ -119,7 +119,26 @@ export default function AttendantDashboard({ staff }) {
     setAssignment(data);
 
     if (!data) {
-      await loadClosedShift();
+      const closed = await loadClosedShift();
+
+      if (closed?.id) {
+        const { data: existingCash, error: cashError } =
+          await supabase
+            .from("cash_declarations")
+            .select("id")
+            .eq("pump_shift_id", closed.id)
+            .order("declared_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (cashError) {
+          console.log("CASH RECOVERY CHECK ERROR:", cashError);
+        }
+
+        if (!existingCash) {
+          setPage("cash-declaration");
+        }
+      }
     }
 
     setLoading(false);
