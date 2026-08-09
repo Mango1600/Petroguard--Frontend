@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import CameraCapture from "../components/CameraCapture";
+import VideoCapture from "../components/VideoCapture";
 import { handoverAssignment } from "../lib/pumpShiftAssignment";
 import ResumeAssignment from "./ResumeAssignment";
+import OpenShift from "./OpenShift";
 import ShiftClose from "./ShiftClose";
 import CashDeclaration from "./CashDeclaration";
 
 export default function AttendantDashboard({ staff }) {
   const [assignment, setAssignment] = useState(null);
+  const [closedShift, setClosedShift] = useState(null);
+  const [cashResult, setCashResult] = useState(null);
+  const [reconResult, setReconResult] = useState(null);
   const [closingMeter, setClosingMeter] = useState("");
   const [closingEvidence, setClosingEvidence] = useState("");
   const [evidenceVerified, setEvidenceVerified] = useState(false);
@@ -20,9 +25,9 @@ export default function AttendantDashboard({ staff }) {
 
   async function loadPumpShift() {
     const { data: sessionData } = await supabase.auth.getSession();
-    console.log("SUPABASE SESSION:", sessionData);
+    // DEBUG REMOVED
 
-    console.log("Dashboard staff FULL:", JSON.stringify(staff, null, 2));
+    // DEBUG REMOVED
 
     if (!staff?.id) return;
 
@@ -44,29 +49,108 @@ export default function AttendantDashboard({ staff }) {
       `)
       .eq("staff_id", staff.id)
       .eq("status", "ACTIVE")
+      .eq("pump_shifts.business_days.status", "OPEN")
+      .order("id", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    console.log("Dashboard staff FULL:", JSON.stringify(staff, null, 2));
-    console.log("Active assignment query result:", data);
-    console.log("Active assignment query error:", error);
+    // DEBUG REMOVED
+    // DEBUG REMOVED
+    // DEBUG REMOVED
 
     if (error) {
       console.log(error);
     }
 
     setAssignment(data);
+
+    if (!data) {
+      const { data: closed } = await supabase
+        .from("pump_shifts")
+        .select(`
+          *,
+          pumps (
+            pump_name,
+            product_type
+          ),
+          business_days (
+            id,
+            business_date
+          )
+        `)
+        .eq("closed_by_staff_id", staff.id)
+        .eq("status", "CLOSED")
+        .order("closed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // DEBUG REMOVED
+
+        setClosedShift(closed);
+
+      if (closed?.id) {
+
+        const { data: cash } = await supabase
+          .from("cash_declarations")
+          .select("*")
+          .eq("pump_shift_id", closed.id)
+          .order("declared_at", { ascending:false })
+          .limit(1)
+          .maybeSingle();
+
+        setCashResult(cash);
+
+
+        const { data: recon } = await supabase
+          .from("daily_reconciliation")
+          .select("*")
+          .eq("shift_id", closed.id)
+          .order("created_at", { ascending:false })
+          .limit(1)
+          .maybeSingle();
+
+        setReconResult(recon);
+      }
+    }
+
     setLoading(false);
   }
 
   if (loading)
     return <div style={{padding:20}}>Loading Pump Shift...</div>;
 
+  if (page === "cash-declaration") {
+  return (
+    <CashDeclaration
+      shiftData={{
+        business_day_id: closedShift?.business_days?.id,
+        pump_shift_id: closedShift?.id,
+        attendant_assignment_id: closedShift?.assignment_id || null,
+        user_id: staff?.user_id,
+        staff_id: staff?.id
+      }}
+      onComplete={async () => {
+        await loadPumpShift();
+        setPage("cash-declaration");
+      }}
+    />
+  );
+}
+
+if (!assignment) {
+    return (
+      <OpenShift
+        staff={staff}
+        onShiftOpened={loadPumpShift}
+      />
+    );
+  }
+
   if (!assignment) {
     return (
-      <ResumeAssignment
-        loggedInStaff={staff}
-        
-        onResumeSuccess={loadPumpShift}
+      <OpenShift
+        staff={staff}
+        onShiftOpened={loadPumpShift}
       />
     );
   }
@@ -124,17 +208,6 @@ export default function AttendantDashboard({ staff }) {
 
   
 
-if (page === "cash-declaration") {
-  return (
-    <CashDeclaration
-      loggedInStaff={staff}
-      onComplete={() => {
-        setPage("dashboard");
-        loadPumpShift();
-      }}
-    />
-  );
-}
 
 if (page === "shift-close") {
   return (
@@ -142,9 +215,9 @@ if (page === "shift-close") {
       loggedInStaff={staff}
       assignment={assignment}
       shift={shift}
-      onComplete={() => {
-        setPage("dashboard");
-        loadPumpShift();
+      onComplete={async () => {
+        await loadPumpShift();
+        setPage("cash-declaration");
       }}
     />
   );
@@ -177,14 +250,15 @@ return (
 
       <p>Assignment No: {assignment.assignment_no}</p>
 
-      <CameraCapture
-        title="Closing Evidence"
+      <VideoCapture
         stationId={staff?.station_id}
         uploadedBy={staff?.user_id}
         recordId={assignment?.pump_shift_id}
-        moduleName="pump_shift"
-        onCapture={(evidenceId) => {
-          setClosingEvidence(evidenceId);
+        moduleName="SHIFT_CLOSE"
+        evidenceType="closing_shift_video"
+        onComplete={(result) => {
+          console.log("CLOSING VIDEO CAPTURED:", result);
+          setClosingEvidence(result);
           setEvidenceVerified(true);
         }}
       />
@@ -195,6 +269,47 @@ placeholder="Closing Meter"
 value={closingMeter}
 onChange={(e)=>setClosingMeter(e.target.value)}
 />
+
+<div style={{
+  border:"1px solid #999",
+  padding:"12px",
+  marginTop:"15px",
+  borderRadius:"8px"
+}}>
+<h3>📊 Shift Result Preview</h3>
+
+<p>
+Opening Meter: {shift?.opening_meter}
+</p>
+
+<p>
+Closing Meter: {shift?.closing_meter}
+</p>
+
+<p>
+Litres Sold: {
+  shift?.closing_meter && shift?.opening_meter
+    ? (Number(shift.closing_meter) - Number(shift.opening_meter)).toFixed(2)
+    : "0"
+} L
+</p>
+
+<p>
+Price: ₦1,300
+</p>
+
+<p>
+Expected Sales: ₦{
+  shift?.closing_meter && shift?.opening_meter
+    ? (
+      (Number(shift.closing_meter) - Number(shift.opening_meter))
+      * 1300
+    ).toLocaleString()
+    : "0"
+}
+</p>
+
+</div>
 
 
 

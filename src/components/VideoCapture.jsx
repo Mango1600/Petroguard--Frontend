@@ -5,12 +5,15 @@ import { uploadVideoEvidence } from "../services/evidenceService";
 export default function VideoCapture({
   onComplete,
   stationId,
-  staffId,
+  uploadedBy,
+  recordId,
   shiftId,
-  evidenceType = "SHIFT_VIDEO"
+  evidenceType = "SHIFT_VIDEO",
+  moduleName
 }) {
   const videoRef = useRef(null);
   const recorderRef = useRef(null);
+  const timerRef = useRef(null);
 
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -21,6 +24,11 @@ export default function VideoCapture({
     startCamera();
 
     return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
       stopCamera();
     };
   }, []);
@@ -59,15 +67,14 @@ export default function VideoCapture({
           videoBlob: blob,
           fileName: "shift_evidence.webm",
           stationId,
-          recordId: shiftId || "PENDING",
-          moduleName: evidenceType,
-          uploadedBy: staffId,
-          description: "Opening shift video evidence"
+          recordId: recordId ?? shiftId,
+          moduleName: moduleName || evidenceType,
+          uploadedBy,
+          description: "Shift video evidence"
         }).then((result)=>{
           console.log("VIDEO UPLOAD:", result);
 
           stopCamera();
-          setSeconds(0);
           setCompleted(true);
 
           if (onComplete) {
@@ -85,25 +92,38 @@ export default function VideoCapture({
   function startRecording() {
     if (!recorderRef.current) return;
 
+    // Clear any previous timer before starting a new recording.
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setSeconds(0);
     recorderRef.current.start();
     setRecording(true);
 
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setSeconds((s) => {
-
         if (s >= 300) {
-          clearInterval(timer);
+          clearInterval(timerRef.current);
+          timerRef.current = null;
           stopRecording();
           return s;
         }
 
         return s + 1;
       });
-    },1000);
+    }, 1000);
   }
 
 
   function stopRecording() {
+    // Stop the timer immediately.
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
     if (recorderRef.current &&
         recorderRef.current.state === "recording") {
 
@@ -111,7 +131,6 @@ export default function VideoCapture({
     }
 
     setRecording(false);
-    setSeconds(0);
   }
 
 
