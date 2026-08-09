@@ -23,6 +23,60 @@ export default function AttendantDashboard({ staff }) {
     loadPumpShift();
   }, []);
 
+  async function loadClosedShift() {
+    if (!staff?.id) return null;
+
+    const { data: closed, error } = await supabase
+      .from("pump_shifts")
+      .select(`
+        *,
+        pumps (
+          pump_name,
+          product_type
+        ),
+        business_days (
+          id,
+          business_date
+        )
+      `)
+      .eq("closed_by_staff_id", staff.id)
+      .eq("status", "CLOSED")
+      .order("closed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.log("CLOSED SHIFT LOAD ERROR:", error);
+      throw error;
+    }
+
+    setClosedShift(closed);
+
+    if (closed?.id) {
+      const { data: cash } = await supabase
+        .from("cash_declarations")
+        .select("*")
+        .eq("pump_shift_id", closed.id)
+        .order("declared_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setCashResult(cash);
+
+      const { data: recon } = await supabase
+        .from("daily_reconciliation")
+        .select("*")
+        .eq("shift_id", closed.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setReconResult(recon);
+    }
+
+    return closed;
+  }
+
   async function loadPumpShift() {
     const { data: sessionData } = await supabase.auth.getSession();
     // DEBUG REMOVED
@@ -65,52 +119,7 @@ export default function AttendantDashboard({ staff }) {
     setAssignment(data);
 
     if (!data) {
-      const { data: closed } = await supabase
-        .from("pump_shifts")
-        .select(`
-          *,
-          pumps (
-            pump_name,
-            product_type
-          ),
-          business_days (
-            id,
-            business_date
-          )
-        `)
-        .eq("closed_by_staff_id", staff.id)
-        .eq("status", "CLOSED")
-        .order("closed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      // DEBUG REMOVED
-
-        setClosedShift(closed);
-
-      if (closed?.id) {
-
-        const { data: cash } = await supabase
-          .from("cash_declarations")
-          .select("*")
-          .eq("pump_shift_id", closed.id)
-          .order("declared_at", { ascending:false })
-          .limit(1)
-          .maybeSingle();
-
-        setCashResult(cash);
-
-
-        const { data: recon } = await supabase
-          .from("daily_reconciliation")
-          .select("*")
-          .eq("shift_id", closed.id)
-          .order("created_at", { ascending:false })
-          .limit(1)
-          .maybeSingle();
-
-        setReconResult(recon);
-      }
+      await loadClosedShift();
     }
 
     setLoading(false);
@@ -120,6 +129,14 @@ export default function AttendantDashboard({ staff }) {
     return <div style={{padding:20}}>Loading Pump Shift...</div>;
 
   if (page === "cash-declaration") {
+  if (!closedShift?.id) {
+    return (
+      <div style={{padding:20}}>
+        <h2>Loading Closed Shift...</h2>
+      </div>
+    );
+  }
+
   return (
     <CashDeclaration
       shiftData={{
@@ -129,9 +146,8 @@ export default function AttendantDashboard({ staff }) {
         user_id: staff?.user_id,
         staff_id: staff?.id
       }}
-      onComplete={async () => {
-        await loadPumpShift();
-        setPage("cash-declaration");
+      onComplete={() => {
+        setPage("dashboard");
       }}
     />
   );
@@ -216,8 +232,13 @@ if (page === "shift-close") {
       assignment={assignment}
       shift={shift}
       onComplete={async () => {
-        await loadPumpShift();
-        setPage("cash-declaration");
+        try {
+          setPage("cash-declaration");
+          await loadClosedShift();
+        } catch (error) {
+          console.log("CLOSED SHIFT LOAD ERROR:", error);
+          alert("Shift closed, but closed shift data could not be loaded: " + error.message);
+        }
       }}
     />
   );
