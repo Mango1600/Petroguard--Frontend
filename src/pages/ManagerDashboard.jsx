@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import ManagerActivity from "../components/ManagerActivity";
+import StaffRoster from "./StaffRoster";
+import BusinessDayManagement from "./BusinessDayManagement";
+import BusinessDayClose from "./BusinessDayClose";
 
-export default function ManagerDashboard() {
+export default function ManagerDashboard({ staff }) {
   const [attendants, setAttendants] = useState([]);
 
   useEffect(() => {
@@ -24,9 +27,23 @@ export default function ManagerDashboard() {
     setAttendants(data || []);
   }
 
+  const [showRoster, setShowRoster] = useState(false);
+
   return (
     <div>
       <h1>Manager Dashboard</h1>
+
+      <BusinessDayManagement staff={staff} />
+        <BusinessDayClose staff={staff} />
+
+      <button
+        onClick={() => setShowRoster(!showRoster)}
+        style={{ marginBottom: 15 }}
+      >
+        {showRoster ? "Hide Staff Roster" : "Open Staff Roster"}
+      </button>
+
+      {showRoster && <StaffRoster staff={staff} />}
 
       <ManagerActivity />
 
