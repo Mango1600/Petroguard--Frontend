@@ -15,6 +15,20 @@ export default function BusinessDayClose({ staff }) {
     setMessage("");
 
     try {
+      // Get the authenticated Supabase user.
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user?.id) {
+        throw new Error("Authenticated Manager user could not be identified.");
+      }
+
       // Find the current OPEN Business Day for this station.
       const { data: businessDay, error: businessDayError } =
         await supabase
@@ -61,7 +75,7 @@ export default function BusinessDayClose({ staff }) {
           .update({
             status: "CLOSED",
             closed_at: new Date().toISOString(),
-            closed_by: staff.id
+            closed_by: user.id
           })
           .eq("id", businessDay.id)
           .eq("station_id", staff.station_id)
