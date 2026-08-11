@@ -15,7 +15,6 @@ export default function BusinessDayClose({ staff }) {
     setMessage("");
 
     try {
-      // Get the authenticated Supabase user.
       const {
         data: { user },
         error: userError
@@ -33,7 +32,7 @@ export default function BusinessDayClose({ staff }) {
       const { data: businessDay, error: businessDayError } =
         await supabase
           .from("business_days")
-          .select("*")
+          .select("id, station_id, business_date, status")
           .eq("station_id", staff.station_id)
           .eq("status", "OPEN")
           .order("opened_at", { ascending: false })
@@ -49,46 +48,19 @@ export default function BusinessDayClose({ staff }) {
         return;
       }
 
-      // Record the closure using the LIVE business_day_closures schema.
-      const { error: closureError } = await supabase
-        .from("business_day_closures")
-        .insert({
-          station_id: businessDay.station_id,
-          business_date: businessDay.business_date,
-          closed_by: staff.id,
-          status: "CLOSED",
-          pump_readings_completed: true,
-          tank_dip_completed: true,
-          payment_summary_completed: true,
-          manager_approval_completed: true,
-          notes: "Business Day closed from Manager Dashboard"
+      // Close the Business Day through one database transaction.
+      const { data: updatedDay, error: closeError } =
+        await supabase.rpc("close_business_day", {
+          p_business_day_id: businessDay.id,
+          p_staff_id: staff.id,
+          p_auth_user_id: user.id
         });
 
-      if (closureError) {
-        throw closureError;
+      if (closeError) {
+        throw closeError;
       }
 
-      // Actually close the Business Day.
-      const { data: updatedDay, error: updateError } =
-        await supabase
-          .from("business_days")
-          .update({
-            status: "CLOSED",
-            closed_at: new Date().toISOString(),
-            closed_by: user.id
-          })
-          .eq("id", businessDay.id)
-          .eq("station_id", staff.station_id)
-          .eq("status", "OPEN")
-          .select()
-          .single();
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Never report success unless the database confirms CLOSED.
-      if (updatedDay?.status !== "CLOSED") {
+      if (!updatedDay || updatedDay.status !== "CLOSED") {
         throw new Error(
           "Business Day close could not be verified in the database."
         );
