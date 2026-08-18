@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+//import Login from "./pages/Login";
 
 export default function App() {
   const [staff, setStaff] = useState(null);
