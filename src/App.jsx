@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import Dashboard from "./pages/Dashboard";
-//import Login from "./pages/Login";
+import Login from "./pages/Login";
 
 export default function App() {
   const [staff, setStaff] = useState(null);
@@ -57,8 +57,7 @@ export default function App() {
   }
 
   if (!staff) {
-    return 
-   // return <Login onLogin={setStaff} />;
+    return <Login onLogin={setStaff} />;
   }
 
   return (
