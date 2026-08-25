@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import LandingPage from "./pages/LandingPage";
 
 export default function App() {
   const [staff, setStaff] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [sessionIdentity, setSessionIdentity] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     async function checkSession() {
@@ -57,7 +59,11 @@ export default function App() {
   }
 
   if (!staff) {
-    return <Login onLogin={setStaff} />;
+    if (showLogin) {
+      return <Login onLogin={setStaff} />;
+    }
+
+    return <LandingPage onLogin={() => setShowLogin(true)} />;
   }
 
   return (
